@@ -1,0 +1,233 @@
+.display-page {
+  background: #f5f7fb;
+  min-height: 100vh;
+}
+
+.display-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.display-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #ffffff;
+  padding: 20px 24px;
+  border-radius: 16px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.6rem;
+  color: #0f172a;
+}
+
+.page-subtitle {
+  margin: 6px 0 0;
+  color: #64748b;
+}
+
+.header-spacer {
+  flex: 1;
+}
+
+.summary-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.summary-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.patient-name {
+  margin: 0;
+  font-size: 1.8rem;
+  color: #0f172a;
+}
+
+.patient-meta {
+  margin: 8px 0 0;
+  color: #475569;
+  font-weight: 500;
+}
+
+.summary-badges {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.badge-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 140px;
+}
+
+.badge-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.status-Admitted,
+.status-Admission\ Pending,
+.status-Discharge\ Pending,
+.status-Today\ Discharged,
+.status-KIV\ Discharged,
+.status-Tomorrow\ Discharge {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.status-unknown {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.igl-Approved,
+.igl-Approved\ with\ GL {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.igl-Pending,
+.igl-In\ Progress {
+  background: #fef9c3;
+  color: #a16207;
+}
+
+.igl-Rejected {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.section-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #0f172a;
+}
+
+.section-subtitle {
+  margin: 6px 0 0;
+  color: #94a3b8;
+}
+
+.section-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.detail-item {
+  background: #f8fafc;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.detail-label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.detail-value {
+  color: #0f172a;
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #0f172a;
+  color: #ffffff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.icon-button .icon {
+  font-size: 1rem;
+}
+
+.icon-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 16px rgba(15, 23, 42, 0.15);
+}
+
+.empty-state {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .display-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .summary-main {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

@@ -1,0 +1,255 @@
+// src/pages/AdminDashboard.jsx
+import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { initAuth } from '../api/auth';
+import { getPatients, deletePatient } from '../api/patients';
+import Navbar from '../components/Navbar';
+import IglStatusPieChart from './charts/IglStatusPieChart';
+import AdmissionStatusPieChart from './charts/AdmissionStatusPieChart';
+
+function DoctorDashboard() {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [patients, setPatients] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [initializing, setInitializing] = useState(true);
+
+  useEffect(() => {
+    const initialize = async () => {
+      const authenticatedUser = await initAuth();
+      
+      if (!authenticatedUser) {
+        navigate('/login');
+        return;
+      }
+      
+      if (authenticatedUser.role?.name !== 'Doctor') {
+        navigate('/dashboard');
+        return;
+      }
+      
+      setUser(authenticatedUser);
+      setInitializing(false);
+    };
+
+    initialize();
+  }, [navigate]);
+
+  useEffect(() => {
+    if (!user || initializing) return;
+    fetchPatients();
+  }, [user, initializing]);
+
+  const fetchPatients = async () => {
+    setLoading(true);
+    try {
+      const data = await getPatients();
+      setPatients(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id, patientName) => {
+    if (!window.confirm(`Are you sure you want to delete ${patientName}?`)) {
+      return;
+    }
+
+    try {
+      await deletePatient(id);
+      alert('Patient deleted successfully!');
+      fetchPatients();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString();
+  };
+
+  const formatTime = (timeString) => {
+    if (!timeString) return 'N/A';
+    return timeString;
+  };
+
+  // Helper function to get the latest admission
+  const getLatestAdmission = (admissions) => {
+    if (!admissions || admissions.length === 0) return null;
+    
+    // If single admission object (Many-to-One)
+    if (!Array.isArray(admissions)) return admissions;
+    
+    // If array of admissions (One-to-Many), get the latest
+    return admissions.sort((a, b) => 
+      new Date(b.admission_date) - new Date(a.admission_date)
+    )[0];
+  };
+
+  // Helper function to get insurance data
+  const getInsurance = (insurance) => {
+    if (!insurance) return null;
+    
+    // If single insurance object
+    if (!Array.isArray(insurance)) return insurance;
+    
+    // If array, get the first or active one
+    return insurance[0] || null;
+  };
+
+  // Helper function to get bed data
+  const getBed = (bed) => {
+    if (!bed) return null;
+    
+    // If single bed object
+    if (!Array.isArray(bed)) return bed;
+    
+    // If array, get the current/active bed
+    return bed[0] || null;
+  };
+
+  const iglChartData = useMemo(() => {
+    const counts = { Pending: 0, Approved: 0, Rejected: 0 };
+    patients.forEach((patient) => {
+      const insurance = getInsurance(patient.insurance);
+      const status = (insurance?.IGL_status || '').toLowerCase();
+      if (status.includes('reject')) counts.Rejected += 1;
+      else if (status.includes('approve')) counts.Approved += 1;
+      else counts.Pending += 1;
+    });
+    return [
+      { name: 'Pending', value: counts.Pending },
+      { name: 'Approved', value: counts.Approved },
+      { name: 'Rejected', value: counts.Rejected }
+    ];
+  }, [patients]);
+
+  const admissionChartData = useMemo(() => {
+    const counts = { Admitted: 0, Pending: 0, Discharge: 0 };
+    patients.forEach((patient) => {
+      const admission = getLatestAdmission(patient.patient_Admission);
+      const status = (admission?.status || '').toLowerCase();
+      if (status.includes('admitted')) counts.Admitted += 1;
+      else if (status.includes('pending')) counts.Pending += 1;
+      else if (status.includes('discharge')) counts.Discharge += 1;
+      else counts.Pending += 1;
+    });
+    return [
+      { name: 'Admitted', value: counts.Admitted },
+      { name: 'Pending', value: counts.Pending },
+      { name: 'Discharge', value: counts.Discharge }
+    ];
+  }, [patients]);
+
+  if (!user || initializing) return <div className="loading">Loading...</div>;
+
+  return (
+    <div>
+      <Navbar user={user} />
+      
+      <div className="page-container">
+        <div className="page-header">
+          <h1>Doctor Dashboard</h1>
+          <button 
+            onClick={() => navigate('/patients/create')} 
+            className="btn-primary"
+          >
+            + Create New Patient
+          </button>
+        </div>
+
+        {error && <div className="error-message">{error}</div>}
+
+        <div className="dashboard-charts">
+          <IglStatusPieChart data={iglChartData} />
+          <AdmissionStatusPieChart data={admissionChartData} />
+        </div>
+
+        {loading ? (
+          <div className="loading">Loading patients...</div>
+        ) : (
+          <div className="table-container">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>MRN</th>
+                  <th>Patient Name</th>
+                  <th>Bed No</th>
+                  <th>Status</th>
+                  <th>Insurance Company</th>
+                  <th>IGL Status</th>
+                  <th>Admission Date</th>
+                  <th>Operation Date</th>
+                  <th>Operation Time</th>
+                  <th>Admitted By</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {patients.length === 0 ? (
+                  <tr>
+                    <td colSpan="11" className="text-center">
+                      No patients found. Create your first patient!
+                    </td>
+                  </tr>
+                ) : (
+                  patients.map((patient) => {
+                    const admission = getLatestAdmission(patient.patient_Admission);
+                    const insurance = getInsurance(patient.insurance);
+                    const bed = getBed(patient.patient_bed);
+
+                    return (
+                      <tr key={patient.id}>
+                        <td>{patient.mrn}</td>
+                        <td><strong>{patient.patient_name}</strong></td>
+                        <td>{bed?.bed_no || 'N/A'}</td>
+                        <td>
+                          <span className={`status-badge status-${admission?.status || 'unknown'}`}>
+                            {admission?.status || 'N/A'}
+                          </span>
+                        </td>
+                        <td>{insurance?.tpa_name || 'N/A'}</td>
+                        <td>
+                          <span className={`igl-status ${insurance?.IGL_status || ''}`}>
+                            {insurance?.IGL_status || 'N/A'}
+                          </span>
+                        </td>
+                        <td>{formatDate(admission?.admission_date)}</td>
+                        <td>{formatDate(admission?.operation_date)}</td>
+                        <td>{formatTime(admission?.operation_time)}</td>
+                        <td>
+                          {patient.user_created?.first_name} {patient.user_created?.last_name}
+                        </td>
+                        <td className="actions">
+                          <button 
+                            onClick={() => navigate(`/patients/view/${patient.id}`)}
+                            className="btn-view"
+                          >
+                            View
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(patient.id, patient.patient_name)}
+                            className="btn-delete"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default DoctorDashboard;
