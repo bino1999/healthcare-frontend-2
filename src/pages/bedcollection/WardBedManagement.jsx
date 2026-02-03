@@ -8,7 +8,7 @@ import HospitalWardManagement from './HospitalWardManagement';
 function WardBedManagement() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState('wards');
+  const [activeTab, setActiveTab] = useState('beds');
 
   useEffect(() => {
     const initialize = async () => {
@@ -52,16 +52,16 @@ function WardBedManagement() {
 
         <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
           <button
-            className={activeTab === 'wards' ? 'btn-primary' : 'btn-secondary'}
-            onClick={() => setActiveTab('wards')}
-          >
-            Wards
-          </button>
-          <button
             className={activeTab === 'beds' ? 'btn-primary' : 'btn-secondary'}
             onClick={() => setActiveTab('beds')}
           >
             Beds
+          </button>
+          <button
+            className={activeTab === 'wards' ? 'btn-primary' : 'btn-secondary'}
+            onClick={() => setActiveTab('wards')}
+          >
+            Wards
           </button>
         </div>
 

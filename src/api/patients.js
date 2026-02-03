@@ -27,6 +27,9 @@ export async function getPatients(filters = {}) {
           'patient_bed.id',
           'patient_bed.bed_no',
           'patient_bed.Status',
+          'patient_bed.select_ward.id',
+          'patient_bed.select_ward.ward_name',
+          'patient_bed.select_ward.ward_code',
           
           
           // Related: Admission (get the latest/active admission)
@@ -83,19 +86,23 @@ export async function getPatient(id) {
 }
 
 // Create new patient
-export async function createPatient(patientData) {
+export async function createPatient(patientData, admissionData = null) {
   try {
-    const patient = await directus.request(
-      createItem('Patient', {
-        patient_name: patientData.patient_name,
-        mrn: patientData.mrn,
-        date_of_birth: patientData.date_of_birth,
-        NRIC: patientData.NRIC,
-        gender: patientData.gender,
-        contact_number: patientData.contact_number,
-        email: patientData.email
-      })
-    );
+    const payload = {
+      patient_name: patientData.patient_name,
+      mrn: patientData.mrn,
+      date_of_birth: patientData.date_of_birth,
+      NRIC: patientData.NRIC,
+      gender: patientData.gender,
+      contact_number: patientData.contact_number,
+      email: patientData.email
+    };
+
+    if (admissionData) {
+      payload.patient_Admission = admissionData;
+    }
+
+    const patient = await directus.request(createItem('Patient', payload));
     
     return patient;
   } catch (error) {

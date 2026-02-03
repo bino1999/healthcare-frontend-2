@@ -4,22 +4,16 @@ import { useNavigate } from 'react-router-dom';
 import { initAuth } from '../../api/auth';
 import { createPatient } from '../../api/patients';
 import Navbar from '../../components/Navbar';
-import directus from '../../api/directus';
-import { createItem } from '@directus/sdk';
 import PatientForm from './PatientForm';
 import AdmissionForm from './AdmissionForm';
-import InsuranceForm from './InsuranceForm';
 
 function CreatePatientPage() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [activeStep, setActiveStep] = useState(1); // 1: Patient, 2: Admission, 3: Insurance
-  
-  // Store created data for next steps
-  const [createdPatient, setCreatedPatient] = useState(null);
-  const [needsInsurance, setNeedsInsurance] = useState(false);
+  const [activeStep, setActiveStep] = useState(1); // 1: Patient, 2: Admission
+  const [patientDraft, setPatientDraft] = useState(null);
 
   const handleBack = () => {
     const roleName = user?.role?.name;
@@ -62,10 +56,7 @@ function CreatePatientPage() {
     setError('');
 
     try {
-      const patient = await createPatient(patientData);
-      console.log('Patient created:', patient);
-      
-      setCreatedPatient(patient);
+      setPatientDraft(patientData);
       setActiveStep(2); // Move to admission form
     } catch (err) {
       console.error('Error creating patient:', err);
@@ -81,79 +72,31 @@ function CreatePatientPage() {
     setError('');
 
     try {
-      console.log('Creating admission with data:', admissionData);
-      
-      // Create admission - the relationship is already included in admissionData
-      const admission = await directus.request(
-        createItem('Admission', {
-          ...admissionData  // Already contains Patient: [{ id: patientId }]
-        })
-      );
-      console.log('Admission created:', admission);
-
-      // Check if insurance form is needed
-      if (admissionData.financial_class === 'Guarantee Letter') {
-        setNeedsInsurance(true);
-        setActiveStep(3);
-      } else {
-        alert('Patient and admission created successfully!');
-        navigate('/dashboard');
+      if (!patientDraft) {
+        setError('Patient details are missing. Please complete patient information first.');
+        setActiveStep(1);
+        return;
       }
+
+      const { Patient, ...admissionPayload } = admissionData;
+      const patient = await createPatient(patientDraft, admissionPayload);
+      console.log('Patient with admission created:', patient);
+
+      alert('Patient and admission created successfully!');
+      navigate(`/patients/view/${patient.id}`);
     } catch (err) {
       console.error('Error creating admission:', err);
-      setError(err.message || 'Failed to create admission...');
+      setError(err.message || 'Failed to create patient with admission...');
     } finally {
       setLoading(false);
     }
-  };
-
-  // Handle insurance form submission
-  const handleInsuranceSubmit = async (insuranceData) => {
-    setLoading(true);
-    setError('');
-
-    try {
-      console.log('Creating insurance with data:', insuranceData);
-      
-      // IMPORTANT: The field name is 'pation' (not 'Patient') based on the Directus schema
-      // insuranceData already contains 'pation: patientId' from InsuranceForm
-      const insurance = await directus.request(
-        createItem('insurance', insuranceData)
-      );
-      console.log('Insurance created:', insurance);
-
-      alert('Patient, admission, and insurance created successfully!');
-      navigate('/dashboard');
-    } catch (err) {
-      console.error('Error creating insurance:', err);
-      setError(err.message || 'Failed to create insurance. Patient and admission were created successfully, you can add insurance details later from the patient page.');
-      // Even if insurance fails, patient and admission are already created
-      setTimeout(() => navigate('/dashboard'), 3000);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle skip insurance
-  const handleSkipInsurance = () => {
-    alert('Patient and admission created successfully!');
-    navigate('/dashboard');
   };
 
   // Handle cancel
   const handleCancel = () => {
-    if (createdPatient) {
-      const confirmCancel = window.confirm(
-        'Patient has already been created. Are you sure you want to cancel? You can complete the remaining details from the patient page.'
-      );
-      if (confirmCancel) {
-        navigate('/dashboard');
-      }
-    } else {
-      const confirmCancel = window.confirm('Are you sure you want to cancel? All entered data will be lost.');
-      if (confirmCancel) {
-        navigate('/dashboard');
-      }
+    const confirmCancel = window.confirm('Are you sure you want to cancel? All entered data will be lost.');
+    if (confirmCancel) {
+      navigate('/dashboard');
     }
   };
 
@@ -239,14 +182,6 @@ function CreatePatientPage() {
           }}>
             Step 2: Admission (Required)
           </div>
-          {needsInsurance && (
-            <div style={{
-              ...styles.step,
-              ...(activeStep === 3 ? styles.stepActive : {})
-            }}>
-              Step 3: Insurance (Optional)
-            </div>
-          )}
         </div>
 
         {/* Render appropriate form based on active step */}
@@ -258,24 +193,18 @@ function CreatePatientPage() {
           />
         )}
 
-        {activeStep === 2 && createdPatient && (
+        {activeStep === 2 && (
           <AdmissionForm
-            patientId={createdPatient.id}
+            patientId="draft"
             onSubmit={handleAdmissionSubmit}
             onCancel={handleCancel}
             loading={loading}
+            submitLabel="Create Patient & Admission"
+            loadingLabel="Creating..."
+            cancelLabel="Cancel"
           />
         )}
 
-        {activeStep === 3 && createdPatient && needsInsurance && (
-          <InsuranceForm
-            patientId={createdPatient.id}
-            onSubmit={handleInsuranceSubmit}
-            onSkip={handleSkipInsurance}
-            onCancel={handleCancel}
-            loading={loading}
-          />
-        )}
       </div>
     </div>
   );

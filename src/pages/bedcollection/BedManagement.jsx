@@ -3,6 +3,7 @@ import { initAuth } from '../../api/auth';
 import { getPatients } from '../../api/patients';
 import { getHospitalWards } from '../../api/hospitalWard';
 import { createBed, deleteBed, getBeds, updateBed } from '../../api/bed';
+import BedKpiCards from '../dashboard-widgets/BedKpiCards';
 import BedForm from './BedForm';
 
 function BedManagement({ embedded = false }) {
@@ -16,6 +17,7 @@ function BedManagement({ embedded = false }) {
   const [activeBed, setActiveBed] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [viewBed, setViewBed] = useState(null);
+  const [kpiRefreshKey, setKpiRefreshKey] = useState(0);
 
   useEffect(() => {
     const initialize = async () => {
@@ -49,6 +51,7 @@ function BedManagement({ embedded = false }) {
       setBeds(bedData);
       setWards(wardData);
       setPatients(patientData);
+      setKpiRefreshKey((prev) => prev + 1);
     } catch (err) {
       setError(err.message || 'Failed to fetch beds');
     } finally {
@@ -109,6 +112,8 @@ function BedManagement({ embedded = false }) {
           </button>
         )}
       </div>
+
+      <BedKpiCards refreshKey={kpiRefreshKey} />
 
       {error && <div className="error-message">{error}</div>}
 

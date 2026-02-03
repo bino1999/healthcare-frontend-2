@@ -195,10 +195,14 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
 
   const validate = () => {
     const newErrors = {};
-    if (!insuranceData.Policy_No.trim()) newErrors.Policy_No = 'Policy number is required';
-    if (!insuranceData.tpa_name) newErrors.tpa_name = 'TPA name is required';
-    if (!insuranceData.admission_reason) newErrors.admission_reason = 'Admission reason is required';
-    
+    const isEditing = Boolean(initialData?.id);
+
+    if (!isEditing) {
+      if (!insuranceData.Policy_No.trim()) newErrors.Policy_No = 'Policy number is required';
+      if (!insuranceData.tpa_name) newErrors.tpa_name = 'TPA name is required';
+      if (!insuranceData.admission_reason) newErrors.admission_reason = 'Admission reason is required';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -207,6 +211,7 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
     e.preventDefault();
     if (validate()) {
       const submissionData = {
+        id: initialData?.id,
         pation: patientId,
         Policy_No: insuranceData.Policy_No || null,
         tpa_name: insuranceData.tpa_name || null,

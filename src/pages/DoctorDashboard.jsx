@@ -6,6 +6,8 @@ import { getPatients, deletePatient } from '../api/patients';
 import Navbar from '../components/Navbar';
 import IglStatusPieChart from './charts/IglStatusPieChart';
 import AdmissionStatusPieChart from './charts/AdmissionStatusPieChart';
+import FiltersBar from './dashboard-widgets/FiltersBar';
+import KpiCards from './dashboard-widgets/KpiCards';
 
 function DoctorDashboard() {
   const navigate = useNavigate();
@@ -14,6 +16,7 @@ function DoctorDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [initializing, setInitializing] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const initialize = async () => {
@@ -113,9 +116,22 @@ function DoctorDashboard() {
     return bed[0] || null;
   };
 
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+
+  const filteredPatients = useMemo(() => {
+    return patients.filter((patient) => {
+      if (normalizedSearch) {
+        const searchTarget = `${patient.patient_name || ''} ${patient.mrn || ''}`.toLowerCase();
+        if (!searchTarget.includes(normalizedSearch)) return false;
+      }
+
+      return true;
+    });
+  }, [patients, normalizedSearch]);
+
   const iglChartData = useMemo(() => {
     const counts = { Pending: 0, Approved: 0, Rejected: 0 };
-    patients.forEach((patient) => {
+    filteredPatients.forEach((patient) => {
       const insurance = getInsurance(patient.insurance);
       const status = (insurance?.IGL_status || '').toLowerCase();
       if (status.includes('reject')) counts.Rejected += 1;
@@ -127,11 +143,11 @@ function DoctorDashboard() {
       { name: 'Approved', value: counts.Approved },
       { name: 'Rejected', value: counts.Rejected }
     ];
-  }, [patients]);
+  }, [filteredPatients]);
 
   const admissionChartData = useMemo(() => {
     const counts = { Admitted: 0, Pending: 0, Discharge: 0 };
-    patients.forEach((patient) => {
+    filteredPatients.forEach((patient) => {
       const admission = getLatestAdmission(patient.patient_Admission);
       const status = (admission?.status || '').toLowerCase();
       if (status.includes('admitted')) counts.Admitted += 1;
@@ -144,7 +160,32 @@ function DoctorDashboard() {
       { name: 'Pending', value: counts.Pending },
       { name: 'Discharge', value: counts.Discharge }
     ];
-  }, [patients]);
+  }, [filteredPatients]);
+
+  const kpiData = useMemo(() => {
+    const pendingCount = filteredPatients.filter((patient) => {
+      const admission = getLatestAdmission(patient.patient_Admission);
+      return (admission?.status || '').toLowerCase().includes('pending');
+    }).length;
+
+    const admittedCount = filteredPatients.filter((patient) => {
+      const admission = getLatestAdmission(patient.patient_Admission);
+      return (admission?.status || '').toLowerCase().includes('admitted');
+    }).length;
+
+    const iglApproved = filteredPatients.filter((patient) => {
+      const insurance = getInsurance(patient.insurance);
+      const status = (insurance?.IGL_status || '').toLowerCase();
+      return status.includes('approve');
+    }).length;
+
+    return [
+      { label: 'Number of Patients', value: filteredPatients.length },
+      { label: 'IGL Approved', value: iglApproved },
+      { label: 'Total Admitted', value: admittedCount },
+      { label: 'Total Admission Pending', value: pendingCount }
+    ];
+  }, [filteredPatients]);
 
   if (!user || initializing) return <div className="loading">Loading...</div>;
 
@@ -164,6 +205,10 @@ function DoctorDashboard() {
         </div>
 
         {error && <div className="error-message">{error}</div>}
+
+        <FiltersBar searchTerm={searchTerm} onSearchChange={setSearchTerm} placeholder="Search by patient name" />
+
+        <KpiCards items={kpiData} />
 
         <div className="dashboard-charts">
           <IglStatusPieChart data={iglChartData} />
@@ -191,14 +236,14 @@ function DoctorDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {patients.length === 0 ? (
+                {filteredPatients.length === 0 ? (
                   <tr>
                     <td colSpan="11" className="text-center">
-                      No patients found. Create your first patient!
+                      No patients found.
                     </td>
                   </tr>
                 ) : (
-                  patients.map((patient) => {
+                  filteredPatients.map((patient) => {
                     const admission = getLatestAdmission(patient.patient_Admission);
                     const insurance = getInsurance(patient.insurance);
                     const bed = getBed(patient.patient_bed);

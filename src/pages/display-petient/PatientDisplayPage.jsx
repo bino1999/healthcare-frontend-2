@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { initAuth } from '../../api/auth';
 import { getPatient, updateAdmissionRecord, updatePatient, updatePatientInsurance } from '../../api/patients';
+import { createReferralLetter, getReferralLettersByPatient } from '../../api/Referralletter';
 import { isAdmin, isDoctor, isStaff } from '../../utils/auth';
 import directus from '../../api/directus';
 import { createItem } from '@directus/sdk';
@@ -9,6 +10,8 @@ import Navbar from '../../components/Navbar';
 import PatientForm from '../forms/PatientForm';
 import AdmissionForm from '../forms/AdmissionForm';
 import InsuranceForm from '../forms/InsuranceForm';
+import ReferralLetterForm from '../ReferralLetter/ReferralLetterForm';
+import ReferralLetterDetails from '../ReferralLetter/ReferralLetterDetails';
 import DetailGrid from './DetailGrid';
 import DetailSection from './DetailSection';
 import PatientSummaryCard from './PatientSummaryCard';
@@ -27,6 +30,10 @@ function PatientDisplayPage() {
   const [showCreateInsurance, setShowCreateInsurance] = useState(false);
   const [showAllAdmissionFields, setShowAllAdmissionFields] = useState(false);
   const [showAllInsuranceFields, setShowAllInsuranceFields] = useState(false);
+  const [referralLetters, setReferralLetters] = useState([]);
+  const [referralLoading, setReferralLoading] = useState(false);
+  const [referralError, setReferralError] = useState('');
+  const [showCreateReferral, setShowCreateReferral] = useState(false);
 
   useEffect(() => {
     const initialize = async () => {
@@ -46,6 +53,11 @@ function PatientDisplayPage() {
     fetchPatient();
   }, [user, id]);
 
+  useEffect(() => {
+    if (!user) return;
+    fetchReferralLetters();
+  }, [user, id]);
+
   const fetchPatient = async () => {
     setLoading(true);
     setError('');
@@ -56,6 +68,19 @@ function PatientDisplayPage() {
       setError(err.message || 'Failed to fetch patient');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchReferralLetters = async () => {
+    setReferralLoading(true);
+    setReferralError('');
+    try {
+      const data = await getReferralLettersByPatient(id);
+      setReferralLetters(data || []);
+    } catch (err) {
+      setReferralError(err.message || 'Failed to fetch referral letters');
+    } finally {
+      setReferralLoading(false);
     }
   };
 
@@ -524,12 +549,13 @@ function PatientDisplayPage() {
   };
 
   const handleInsuranceSubmit = async (formData) => {
-    if (!insurance?.id) return;
+    const insuranceId = insurance?.id || formData?.id;
+    if (!insuranceId) return;
     setSavingSection('insurance');
     setError('');
     try {
       const { pation, ...payload } = formData;
-      await updatePatientInsurance(insurance.id, payload);
+      await updatePatientInsurance(insuranceId, payload);
       setEditingSection(null);
       fetchPatient();
     } catch (err) {
@@ -562,6 +588,20 @@ function PatientDisplayPage() {
       await fetchPatient();
     } catch (err) {
       setError(err.message || 'Failed to create insurance');
+    } finally {
+      setSavingSection(null);
+    }
+  };
+
+  const handleCreateReferral = async (formData) => {
+    setSavingSection('create-referral');
+    setReferralError('');
+    try {
+      await createReferralLetter(formData);
+      setShowCreateReferral(false);
+      await fetchReferralLetters();
+    } catch (err) {
+      setReferralError(err.message || 'Failed to create referral letter');
     } finally {
       setSavingSection(null);
     }
@@ -779,6 +819,42 @@ function PatientDisplayPage() {
             )}
           </>
         )}
+
+        <DetailSection
+          title="Referral Letters"
+          subtitle="Referral history for this patient"
+          isEditing={false}
+          onEdit={() => {}}
+          showEdit={false}
+        >
+          {(isAdmin() || isDoctor()) && !showCreateReferral && (
+            <div className="detail-actions">
+              <button
+                type="button"
+                className="icon-button"
+                onClick={() => setShowCreateReferral(true)}
+              >
+                <span className="icon">+</span>
+                Create Referral Letter
+              </button>
+            </div>
+          )}
+
+          {(isAdmin() || isDoctor()) && showCreateReferral && (
+            <ReferralLetterForm
+              patientId={patient.id}
+              onSubmit={handleCreateReferral}
+              onCancel={() => setShowCreateReferral(false)}
+              loading={savingSection === 'create-referral'}
+            />
+          )}
+
+          <ReferralLetterDetails
+            letters={referralLetters}
+            loading={referralLoading}
+            error={referralError}
+          />
+        </DetailSection>
       </div>
     </div>
   );
