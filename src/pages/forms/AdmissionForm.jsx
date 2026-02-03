@@ -583,32 +583,41 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
         </div>
 
         <div style={styles.formGroup}>
-          <label style={styles.label}>Need to Add Others</label>
-          <input
-            type="text"
-            name="need_to_add_others"
-            value={admissionData.need_to_add_others}
-            onChange={handleChange}
-            style={styles.input}
-            placeholder="Specify if other investigations needed"
-            disabled={loading}
-          />
+          <label style={styles.label}>Additional Investigations Needed?</label>
+          <div style={styles.radioGroup}>
+            {['Yes', 'No'].map(option => (
+              <label key={option} style={styles.radioLabel}>
+                <input
+                  type="radio"
+                  name="need_to_add_others"
+                  value={option}
+                  checked={admissionData.need_to_add_others === option}
+                  onChange={handleChange}
+                  style={styles.radio}
+                  disabled={loading}
+                />
+                {option}
+              </label>
+            ))}
+          </div>
         </div>
 
-        <div style={styles.formGroup}>
-          <label style={styles.label}>Other Investigation</label>
-          <textarea
-            name="other_investigation"
-            value={admissionData.other_investigation}
-            onChange={handleChange}
-            style={styles.textarea}
-            placeholder="Enter other investigation details"
-            disabled={loading}
-          />
-        </div>
+        {admissionData.need_to_add_others === 'Yes' && (
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Other Investigation Details</label>
+            <textarea
+              name="other_investigation"
+              value={admissionData.other_investigation}
+              onChange={handleChange}
+              style={styles.textarea}
+              placeholder="Enter other investigation details"
+              disabled={loading}
+            />
+          </div>
+        )}
 
         <div style={styles.formGroup}>
-          <label style={styles.label}>Instructions to Ward Staff</label>
+          <label style={styles.label}>Instructions for Ward Staff</label>
           <textarea
             name="instructions_to_ward_staff"
             value={admissionData.instructions_to_ward_staff}
@@ -639,7 +648,7 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
         </div>
 
         <div style={styles.formGroup}>
-          <label style={styles.label}>Sedation and Anesthesia</label>
+          <label style={styles.label}>Sedation / Anesthesia Type</label>
           <div style={styles.radioGroup}>
             {sedationAnesthesiaOptions.map(option => (
               <label key={option} style={styles.radioLabel}>
@@ -659,33 +668,42 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
         </div>
 
         <div style={styles.formGroup}>
-          <label style={styles.label}>Need to Add More Procedures</label>
-          <input
-            type="text"
-            name="need_to_add_more_procedures"
-            value={admissionData.need_to_add_more_procedures}
-            onChange={handleChange}
-            style={styles.input}
-            placeholder="Specify if more procedures needed"
-            disabled={loading}
-          />
+          <label style={styles.label}>More Procedures Required?</label>
+          <div style={styles.radioGroup}>
+            {['Yes', 'No'].map(option => (
+              <label key={option} style={styles.radioLabel}>
+                <input
+                  type="radio"
+                  name="need_to_add_more_procedures"
+                  value={option}
+                  checked={admissionData.need_to_add_more_procedures === option}
+                  onChange={handleChange}
+                  style={styles.radio}
+                  disabled={loading}
+                />
+                {option}
+              </label>
+            ))}
+          </div>
         </div>
 
-        <div style={styles.formGroup}>
-          <label style={styles.label}>Other Endoscopy Procedures</label>
-          <textarea
-            name="other_endoscopy_procedures"
-            value={admissionData.other_endoscopy_procedures}
-            onChange={handleChange}
-            style={styles.textarea}
-            placeholder="Enter other endoscopy procedure details"
-            disabled={loading}
-          />
-        </div>
+        {admissionData.need_to_add_more_procedures === 'Yes' && (
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Other Endoscopy Procedure Details</label>
+            <textarea
+              name="other_endoscopy_procedures"
+              value={admissionData.other_endoscopy_procedures}
+              onChange={handleChange}
+              style={styles.textarea}
+              placeholder="Enter other endoscopy procedure details"
+              disabled={loading}
+            />
+          </div>
+        )}
 
         <div style={styles.formRow}>
           <div style={styles.formGroup}>
-            <label style={styles.label}>Expected Days of Stay</label>
+            <label style={styles.label}>Expected Length of Stay (Days)</label>
             <input
               type="number"
               name="expected_days_of_stay"
@@ -715,7 +733,7 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
         </div>
 
         <div style={styles.formGroup}>
-          <label style={styles.label}>Additional Information and Individual Risks</label>
+          <label style={styles.label}>Additional Notes / Risks</label>
           <textarea
             name="Additional_Information_and_Individual_Risks"
             value={admissionData.Additional_Information_and_Individual_Risks}

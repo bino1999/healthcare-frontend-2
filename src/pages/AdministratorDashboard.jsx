@@ -2,9 +2,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { initAuth } from '../api/auth';
-import { assignBedToPatient, getPatients, deletePatient } from '../api/patients';
+import { assignBedToPatient, getPatients, deletePatient, updateAdmissionRecord } from '../api/patients';
 import Navbar from '../components/Navbar';
 import AssignBedModal from './bedcollection/AssignBedModal';
+import AdmissionStatusModal from '../components/AdmissionStatusModal';
 import IglStatusPieChart from './charts/IglStatusPieChart';
 import AdmissionStatusPieChart from './charts/AdmissionStatusPieChart';
 
@@ -19,6 +20,11 @@ function AdminDashboard() {
   const [assignError, setAssignError] = useState('');
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [statusModalOpen, setStatusModalOpen] = useState(false);
+  const [selectedAdmission, setSelectedAdmission] = useState(null);
+  const [selectedStatusPatient, setSelectedStatusPatient] = useState(null);
+  const [statusUpdating, setStatusUpdating] = useState(false);
+  const [statusError, setStatusError] = useState('');
 
   useEffect(() => {
     const initialize = async () => {
@@ -76,6 +82,31 @@ function AdminDashboard() {
     setSelectedPatient(patient);
     setAssignError('');
     setAssignModalOpen(true);
+  };
+
+  const handleOpenStatus = (patient, admission) => {
+    if (!admission?.id) return;
+    setSelectedStatusPatient(patient);
+    setSelectedAdmission(admission);
+    setStatusError('');
+    setStatusModalOpen(true);
+  };
+
+  const handleStatusSave = async (newStatus) => {
+    if (!selectedAdmission?.id) return;
+    setStatusUpdating(true);
+    setStatusError('');
+    try {
+      await updateAdmissionRecord(selectedAdmission.id, { status: newStatus });
+      setStatusModalOpen(false);
+      setSelectedAdmission(null);
+      setSelectedStatusPatient(null);
+      await fetchPatients();
+    } catch (err) {
+      setStatusError(err.message || 'Failed to update admission status');
+    } finally {
+      setStatusUpdating(false);
+    }
   };
 
   const handleAssignBed = async (bed) => {
@@ -268,9 +299,17 @@ function AdminDashboard() {
                         </td>
                         <td>{bed?.Status || 'Unassigned'}</td>
                         <td>
-                          <span className={`status-badge status-${admission?.status || 'unknown'}`}>
-                            {admission?.status || 'N/A'}
-                          </span>
+                          <button
+                            type="button"
+                            className="status-button"
+                            onClick={() => handleOpenStatus(patient, admission)}
+                            disabled={!admission?.id || statusUpdating}
+                            title={admission?.id ? 'Update admission status' : 'No admission record'}
+                          >
+                            <span className={`status-badge status-${admission?.status || 'unknown'}`}>
+                              {admission?.status || 'N/A'}
+                            </span>
+                          </button>
                         </td>
                         <td>{insurance?.tpa_name || 'N/A'}</td>
                         <td>
@@ -318,6 +357,22 @@ function AdminDashboard() {
           }
         }}
         onAssign={handleAssignBed}
+      />
+
+      <AdmissionStatusModal
+        isOpen={statusModalOpen}
+        patient={selectedStatusPatient}
+        admission={selectedAdmission}
+        onClose={() => {
+          if (!statusUpdating) {
+            setStatusModalOpen(false);
+            setSelectedAdmission(null);
+            setSelectedStatusPatient(null);
+          }
+        }}
+        onSave={handleStatusSave}
+        loading={statusUpdating}
+        error={statusError}
       />
 
       {assignError && <div className="error-message">{assignError}</div>}

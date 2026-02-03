@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { initAuth } from '../../api/auth';
 import { getPatient, updateAdmissionRecord, updatePatient, updatePatientInsurance } from '../../api/patients';
 import { isAdmin, isDoctor, isStaff } from '../../utils/auth';
+import directus from '../../api/directus';
+import { createItem } from '@directus/sdk';
 import Navbar from '../../components/Navbar';
 import PatientForm from '../forms/PatientForm';
 import AdmissionForm from '../forms/AdmissionForm';
@@ -21,6 +23,10 @@ function PatientDisplayPage() {
   const [savingSection, setSavingSection] = useState(null);
   const [editingSection, setEditingSection] = useState(null);
   const [error, setError] = useState('');
+  const [showCreateAdmission, setShowCreateAdmission] = useState(false);
+  const [showCreateInsurance, setShowCreateInsurance] = useState(false);
+  const [showAllAdmissionFields, setShowAllAdmissionFields] = useState(false);
+  const [showAllInsuranceFields, setShowAllInsuranceFields] = useState(false);
 
   useEffect(() => {
     const initialize = async () => {
@@ -97,6 +103,16 @@ function PatientDisplayPage() {
     () => getInsurance(patient?.insurance),
     [patient]
   );
+
+  const requiresInsurance = admission?.financial_class === 'Guarantee Letter';
+
+  useEffect(() => {
+    setShowCreateAdmission(!admission);
+  }, [admission]);
+
+  useEffect(() => {
+    setShowCreateInsurance(!insurance && requiresInsurance);
+  }, [insurance, requiresInsurance]);
 
   const admissionInitialData = useMemo(() => {
     if (!admission) return null;
@@ -320,6 +336,150 @@ function PatientDisplayPage() {
     ];
   }, [insurance]);
 
+  const admissionSections = useMemo(() => {
+    if (!admission) return [];
+    return [
+      {
+        title: 'Admission Basics',
+        items: [
+          { label: 'Status', value: admission.status },
+          { label: 'Admission Category', value: admission.admission_category },
+          { label: 'Admission Date', value: formatDate(admission.admission_date) },
+          { label: 'Admission Time', value: admission.admission_time },
+          { label: 'Admission To', value: admission.admission_to },
+          { label: 'Type of Accommodation', value: admission.type_of_accommodation },
+          { label: 'Financial Class', value: admission.financial_class },
+          { label: 'Diagnosis', value: admission.diagnosis }
+        ]
+      },
+      {
+        title: 'Operation Details',
+        items: [
+          { label: 'Operation Date', value: formatDate(admission.operation_date) },
+          { label: 'Operation Time', value: admission.operation_time },
+          { label: 'Type of Operation / Procedure', value: admission.type_of_operation_or_procedure },
+          { label: 'Surgery Duration', value: admission.Surgery_Duration }
+        ]
+      },
+      {
+        title: 'Investigations & Procedures',
+        items: [
+          { label: 'Urgent Investigations', value: admission.urgent_investigations },
+          { label: 'Other Investigation', value: admission.other_investigation },
+          { label: 'Endoscopy Procedures', value: admission.endoscopy_procedures },
+          { label: 'Sedation / Anesthesia', value: admission.Sedation_and_Anesthesia },
+          { label: 'Other Endoscopy Procedures', value: admission.other_endoscopy_procedures }
+        ]
+      },
+      {
+        title: 'Care Instructions',
+        items: [
+          { label: 'Instructions to Ward Staff', value: admission.instructions_to_ward_staff },
+          { label: 'Additional Notes / Risks', value: admission.Additional_Information_and_Individual_Risks },
+          { label: 'Confirmation Of', value: admission.confirmation_of }
+        ]
+      },
+      {
+        title: 'Cost & Stay',
+        items: [
+          { label: 'Expected Days of Stay', value: admission.expected_days_of_stay },
+          { label: 'Estimated Cost (RM)', value: admission.estimated_cost_RM }
+        ]
+      },
+      {
+        title: 'Discharge',
+        items: [
+          { label: 'Discharge Date', value: formatDate(admission.discharge_date) },
+          { label: 'Discharge Time', value: admission.discharge_time }
+        ]
+      }
+    ];
+  }, [admission]);
+
+  const insuranceSections = useMemo(() => {
+    if (!insurance) return [];
+    return [
+      {
+        title: 'Insurance Basics',
+        items: [
+          { label: 'Policy Number', value: insurance.Policy_No },
+          { label: 'TPA Name', value: insurance.tpa_name },
+          { label: 'IGL Number', value: insurance.IGL_number },
+          { label: 'IGL Status', value: insurance.IGL_status }
+        ]
+      },
+      {
+        title: 'Admission & Cost',
+        items: [
+          { label: 'Admission Reason', value: insurance.admission_reason },
+          { label: 'Expected Days of Stay', value: insurance.expected_days_of_stay },
+          { label: 'Estimated Cost', value: insurance.estimated_cost }
+        ]
+      },
+      {
+        title: 'Accident / Illness',
+        items: [
+          { label: 'Accident Date', value: formatDate(insurance.accident_date) },
+          { label: 'Accident Time', value: insurance.accident_time },
+          { label: 'Accident Details', value: insurance.accident_details },
+          { label: 'Illness Symptoms First Appeared On', value: formatDate(insurance.illness_symptoms_first_appeared_on_date) },
+          { label: 'Doctors Consulted', value: insurance.doctors_consulted_for_this_illness },
+          { label: 'Doctor / Clinic Contact', value: insurance.doctors_or_clinic_contact }
+        ]
+      },
+      {
+        title: 'Diagnosis & Assessment',
+        items: [
+          { label: 'Diagnosis', value: insurance.diagnosis },
+          { label: 'How Long Aware', value: insurance.how_long_is_person_aware_of_this_condition },
+          { label: 'Blood Pressure', value: insurance.blood_pressure },
+          { label: 'Temperature', value: insurance.temperature },
+          { label: 'Pulse', value: insurance.pulse },
+          { label: 'Date First Consulted', value: formatDate(insurance.date_first_consulted) },
+          { label: 'Previous Consultation', value: insurance.any_previous_consultaion },
+          { label: 'Previous Consultation Details', value: insurance.details_of_previous_consultation }
+        ]
+      },
+      {
+        title: 'Referral & History',
+        items: [
+          { label: 'Was Patient Referred', value: insurance.was_this_patient_referred },
+          { label: 'Patient Referred Details', value: insurance.patient_referred_details },
+          { label: 'Condition Exist Before', value: insurance.condition_exist_before },
+          { label: 'Date', value: formatDate(insurance.date) },
+          { label: 'Disease or Disorder', value: insurance.disease_or_disorder },
+          { label: 'Treatment / Hospitalization Details', value: insurance.treatment_or_hospitalization_details },
+          { label: 'Doctor / Hospital / Clinic', value: insurance.doctor_or_hospital_or_clinic }
+        ]
+      },
+      {
+        title: 'Condition & Other Details',
+        items: [
+          { label: 'Condition Related To', value: insurance.condition_related_to },
+          { label: 'Condition Can Be Managed', value: insurance.condition_be_managed },
+          { label: 'Reason for Admission', value: insurance.reason_for_admission },
+          { label: 'Other Notes', value: insurance.others }
+        ]
+      },
+      {
+        title: 'Pregnancy',
+        items: [
+          { label: 'Pregnant Information', value: insurance.pregnant_information },
+          { label: 'Pregnancy Duration', value: insurance.pregnancy_duration }
+        ]
+      }
+    ];
+  }, [insurance]);
+
+  const isEmptyValue = (value) => {
+    if (value === null || value === undefined || value === '') return true;
+    if (Array.isArray(value)) return value.length === 0;
+    return false;
+  };
+
+  const filterItems = (items, showAll) =>
+    showAll ? items : items.filter((item) => !isEmptyValue(item.value));
+
   const staffDetails = useMemo(() => {
     if (!patient) return [];
     return [
@@ -374,6 +534,34 @@ function PatientDisplayPage() {
       fetchPatient();
     } catch (err) {
       setError(err.message || 'Failed to update insurance');
+    } finally {
+      setSavingSection(null);
+    }
+  };
+
+  const handleCreateAdmission = async (formData) => {
+    setSavingSection('create-admission');
+    setError('');
+    try {
+      await directus.request(createItem('Admission', formData));
+      setShowCreateAdmission(false);
+      await fetchPatient();
+    } catch (err) {
+      setError(err.message || 'Failed to create admission');
+    } finally {
+      setSavingSection(null);
+    }
+  };
+
+  const handleCreateInsurance = async (formData) => {
+    setSavingSection('create-insurance');
+    setError('');
+    try {
+      await directus.request(createItem('insurance', formData));
+      setShowCreateInsurance(false);
+      await fetchPatient();
+    } catch (err) {
+      setError(err.message || 'Failed to create insurance');
     } finally {
       setSavingSection(null);
     }
@@ -458,39 +646,137 @@ function PatientDisplayPage() {
                     cancelLabel="Cancel"
                   />
                 ) : (
-                  <DetailGrid items={admissionDetails} />
+                  <>
+                    <div className="detail-actions">
+                      <button
+                        type="button"
+                        className="toggle-btn"
+                        onClick={() => setShowAllAdmissionFields((prev) => !prev)}
+                      >
+                        {showAllAdmissionFields ? 'Hide empty fields' : 'Show all fields'}
+                      </button>
+                    </div>
+                    <div className="detail-groups">
+                      {admissionSections.map((section) => {
+                        const items = filterItems(section.items, showAllAdmissionFields);
+                        if (items.length === 0) return null;
+                        return (
+                          <div key={section.title} className="detail-group">
+                            <h4 className="detail-group-title">{section.title}</h4>
+                            <DetailGrid items={items} />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
                 )
+              ) : showCreateAdmission ? (
+                <AdmissionForm
+                  patientId={patient.id}
+                  onSubmit={handleCreateAdmission}
+                  onCancel={() => setShowCreateAdmission(false)}
+                  loading={savingSection === 'create-admission'}
+                  submitLabel="Create Admission"
+                  loadingLabel="Creating..."
+                  cancelLabel="Cancel"
+                />
               ) : (
-                <p className="empty-state">No admission details available.</p>
+                <div className="empty-state">
+                  This patient has no admission record yet.
+                  {(isAdmin() || isDoctor()) && (
+                    <button
+                      type="button"
+                      className="btn-primary"
+                      style={{ marginTop: '12px' }}
+                      onClick={() => setShowCreateAdmission(true)}
+                    >
+                      + Create Admission
+                    </button>
+                  )}
+                </div>
               )}
             </DetailSection>
 
-            <DetailSection
-              title="Insurance Details"
-              subtitle="Full insurance record"
-              isEditing={editingSection === 'insurance'}
-              onEdit={() => setEditingSection(editingSection === 'insurance' ? null : 'insurance')}
-              showEdit={Boolean(insurance)}
-            >
-              {insurance ? (
-                editingSection === 'insurance' ? (
-                  <InsuranceForm
-                    patientId={patient.id}
-                    initialData={insuranceInitialData}
-                    onSubmit={handleInsuranceSubmit}
-                    onCancel={() => setEditingSection(null)}
-                    loading={savingSection === 'insurance'}
-                    submitLabel="Save Insurance"
-                    loadingLabel="Saving..."
-                    cancelLabel="Cancel"
-                  />
+            {admission && (
+              <DetailSection
+                title="Insurance Details"
+                subtitle="Full insurance record"
+                isEditing={editingSection === 'insurance'}
+                onEdit={() => setEditingSection(editingSection === 'insurance' ? null : 'insurance')}
+                showEdit={Boolean(insurance)}
+              >
+                {insurance ? (
+                  editingSection === 'insurance' ? (
+                    <InsuranceForm
+                      patientId={patient.id}
+                      initialData={insuranceInitialData}
+                      onSubmit={handleInsuranceSubmit}
+                      onCancel={() => setEditingSection(null)}
+                      loading={savingSection === 'insurance'}
+                      submitLabel="Save Insurance"
+                      loadingLabel="Saving..."
+                      cancelLabel="Cancel"
+                    />
+                  ) : (
+                    <>
+                      <div className="detail-actions">
+                        <button
+                          type="button"
+                          className="toggle-btn"
+                          onClick={() => setShowAllInsuranceFields((prev) => !prev)}
+                        >
+                          {showAllInsuranceFields ? 'Hide empty fields' : 'Show all fields'}
+                        </button>
+                      </div>
+                      <div className="detail-groups">
+                        {insuranceSections.map((section) => {
+                          const items = filterItems(section.items, showAllInsuranceFields);
+                          if (items.length === 0) return null;
+                          return (
+                            <div key={section.title} className="detail-group">
+                              <h4 className="detail-group-title">{section.title}</h4>
+                              <DetailGrid items={items} />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )
+                ) : requiresInsurance ? (
+                  showCreateInsurance ? (
+                    <InsuranceForm
+                      patientId={patient.id}
+                      onSubmit={handleCreateInsurance}
+                      onCancel={() => setShowCreateInsurance(false)}
+                      loading={savingSection === 'create-insurance'}
+                      submitLabel="Create Insurance"
+                      loadingLabel="Creating..."
+                      cancelLabel="Cancel"
+                      skipLabel="Skip"
+                      onSkip={() => setShowCreateInsurance(false)}
+                    />
+                  ) : (
+                    <div className="empty-state">
+                      This patient has no insurance record yet.
+                      {(isAdmin() || isDoctor()) && (
+                        <button
+                          type="button"
+                          className="btn-primary"
+                          style={{ marginTop: '12px' }}
+                          onClick={() => setShowCreateInsurance(true)}
+                        >
+                          + Create Insurance
+                        </button>
+                      )}
+                    </div>
+                  )
                 ) : (
-                  <DetailGrid items={insuranceDetails} />
-                )
-              ) : (
-                <p className="empty-state">No insurance details available.</p>
-              )}
-            </DetailSection>
+                  <div className="empty-state">
+                    Insurance is required only for Guarantee Letter admissions.
+                  </div>
+                )}
+              </DetailSection>
+            )}
           </>
         )}
       </div>

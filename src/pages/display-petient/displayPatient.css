@@ -108,7 +108,7 @@
 
 .status-unknown {
   background: #f1f5f9;
-  color: #64748b;
+  color: #475569;
 }
 
 .igl-Approved,
@@ -166,6 +166,46 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 16px;
+}
+
+.detail-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.detail-group {
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.detail-group-title {
+  margin: 0 0 12px 0;
+  font-size: 1rem;
+  color: #0f172a;
+}
+
+.detail-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.toggle-btn {
+  border: none;
+  background: #e2e8f0;
+  color: #0f172a;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.toggle-btn:hover {
+  box-shadow: 0 8px 14px rgba(15, 23, 42, 0.12);
 }
 
 .detail-item {
