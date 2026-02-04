@@ -289,14 +289,7 @@ function StaffDashboard() {
                             type="button"
                             onClick={() => handleOpenAssign(patient)}
                             disabled={!canAssignBed || assigning}
-                            style={{
-                              background: 'transparent',
-                              border: 'none',
-                              color: canAssignBed ? '#2563eb' : '#94a3b8',
-                              textDecoration: canAssignBed ? 'underline' : 'none',
-                              cursor: canAssignBed ? 'pointer' : 'not-allowed',
-                              padding: 0
-                            }}
+                            className={`table-link-button${canAssignBed ? '' : ' disabled'}`}
                             title={
                               canAssignBed
                                 ? 'Assign bed'

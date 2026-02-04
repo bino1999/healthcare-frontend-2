@@ -322,6 +322,45 @@ body {
   font-style: italic;
 }
 
+/* Dashboard table compact styling */
+.dashboard-table th {
+  padding: 0.75rem 0.9rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+}
+
+.dashboard-table td {
+  padding: 0.7rem 0.9rem;
+  font-size: 0.85rem;
+}
+
+.dashboard-table .status-badge,
+.dashboard-table .igl-status {
+  font-size: 0.7rem;
+  padding: 0.3rem 0.6rem;
+}
+
+.table-link-button {
+  background: transparent;
+  border: none;
+  color: #2563eb;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font-weight: 600;
+}
+
+.table-link-button:hover {
+  color: #1d4ed8;
+}
+
+.table-link-button.disabled,
+.table-link-button:disabled {
+  color: #94a3b8;
+  text-decoration: none;
+  cursor: not-allowed;
+}
+
 /* IGL Status Badges */
 .igl-status {
   display: inline-flex;
