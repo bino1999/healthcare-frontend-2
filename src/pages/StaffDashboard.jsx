@@ -245,11 +245,11 @@ function StaffDashboard() {
         {loading ? (
           <div className="loading">Loading patients...</div>
         ) : (
-          <div className="table-container">
-            <table className="data-table">
+          <div className="table-container dashboard-table-container">
+            <table className="data-table dashboard-table">
               <thead>
                 <tr>
-                  <th>Patient Name</th>
+                  <th className="sticky-col">Patient Name</th>
                   <th>MRN</th>
                   <th>Bed No</th>
                   <th>Bed Status</th>
@@ -278,7 +278,11 @@ function StaffDashboard() {
 
                     return (
                       <tr key={patient.id}>
-                        <td><strong>{patient.patient_name}</strong></td>
+                        <td className="sticky-col">
+                          <span className="truncate" title={patient.patient_name}>
+                            <strong>{patient.patient_name}</strong>
+                          </span>
+                        </td>
                         <td>{patient.mrn}</td>
                         <td>
                           <button

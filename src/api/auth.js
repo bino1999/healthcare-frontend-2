@@ -2,23 +2,49 @@
 import directus from './directus';
 import { readMe } from '@directus/sdk';
 
+const USER_FIELDS = ['id', 'email', 'first_name', 'last_name', 'role.id', 'role.name', 'avatar'];
+
 // Initialize authentication on page load
 export async function initAuth() {
+  const refreshToken = localStorage.getItem('directus_refresh_token');
+
   try {
     // Try to get current user (this will use stored token)
-    const user = await directus.request(
-      readMe({
-        fields: ['id', 'email', 'first_name', 'last_name', 'role.id', 'role.name', 'avatar']
-      })
-    );
-    
+    const user = await directus.request(readMe({ fields: USER_FIELDS }));
+
     if (user) {
       localStorage.setItem('user', JSON.stringify(user));
       return user;
     }
   } catch (error) {
-    // Token expired or invalid, clear storage
+    // Try refresh token before clearing storage
+    if (refreshToken) {
+      try {
+        const refreshed = await directus.refresh({ refresh_token: refreshToken });
+        const newAccess = refreshed?.access_token;
+        const newRefresh = refreshed?.refresh_token;
+
+        if (newAccess) {
+          directus.setToken(newAccess);
+          localStorage.setItem('directus_token', newAccess);
+        }
+        if (newRefresh) {
+          localStorage.setItem('directus_refresh_token', newRefresh);
+        }
+
+        const user = await directus.request(readMe({ fields: USER_FIELDS }));
+        if (user) {
+          localStorage.setItem('user', JSON.stringify(user));
+          return user;
+        }
+      } catch (refreshError) {
+        // fall through to clear storage
+      }
+    }
+
     localStorage.removeItem('user');
+    localStorage.removeItem('directus_token');
+    localStorage.removeItem('directus_refresh_token');
     return null;
   }
 }
@@ -27,22 +53,22 @@ export async function initAuth() {
 export async function login(email, password) {
   try {
     const loginResp = await directus.login(email, password);
-    
-    // Save the access token for persistence across page reloads
-    const token = loginResp?.access_token || directus?.auth?.token;
-    if (token) {
-      localStorage.setItem('directus_token', token);
+
+    // Save tokens for persistence across page reloads
+    const accessToken = loginResp?.access_token || directus?.auth?.token;
+    const refreshToken = loginResp?.refresh_token;
+    if (accessToken) {
+      localStorage.setItem('directus_token', accessToken);
     }
-    
-    const user = await directus.request(
-      readMe({
-        fields: ['id', 'email', 'first_name', 'last_name', 'role.id', 'role.name', 'avatar']
-      })
-    );
-    
+    if (refreshToken) {
+      localStorage.setItem('directus_refresh_token', refreshToken);
+    }
+
+    const user = await directus.request(readMe({ fields: USER_FIELDS }));
+
     // Cache user in localStorage
     localStorage.setItem('user', JSON.stringify(user));
-    
+
     return { success: true, user };
   } catch (error) {
     throw new Error(error.errors?.[0]?.message || 'Login failed');
@@ -58,18 +84,15 @@ export async function logout() {
   } finally {
     localStorage.removeItem('user');
     localStorage.removeItem('directus_token');
+    localStorage.removeItem('directus_refresh_token');
   }
 }
 
 // Get current user
 export async function getCurrentUser() {
   try {
-    const user = await directus.request(
-      readMe({
-        fields: ['id', 'email', 'first_name', 'last_name', 'role.id', 'role.name', 'avatar']
-      })
-    );
-    
+    const user = await directus.request(readMe({ fields: USER_FIELDS }));
+
     localStorage.setItem('user', JSON.stringify(user));
     return user;
   } catch (error) {

@@ -192,7 +192,7 @@ function BedManagement({ embedded = false }) {
                     <td>{bed.Status || 'N/A'}</td>
                     <td>{bed.Category || 'N/A'}</td>
                     <td>{bed.select_ward?.ward_name || 'N/A'}</td>
-                    <td>{bed.Patient?.patient_name || 'Unassigned'}</td>
+                    <td>{bed.Patient[0]?.patient_name || 'Unassigned'}</td>
                     <td className="actions">
                       <button
                         onClick={() => setViewBed(bed)}

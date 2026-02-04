@@ -1,17 +1,27 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { initAuth } from '../../api/auth';
-import { getPatient, updateAdmissionRecord, updatePatient, updatePatientInsurance } from '../../api/patients';
-import { createReferralLetter, getReferralLettersByPatient } from '../../api/Referralletter';
+import { updateAdmissionRecord, updatePatient, updatePatientInsurance } from '../../api/patients';
+import { createReferralLetter } from '../../api/Referralletter';
+import { createAddOnProcedure } from '../../api/addOnProcedures';
 import { isAdmin, isDoctor, isStaff } from '../../utils/auth';
 import directus from '../../api/directus';
 import { createItem } from '@directus/sdk';
 import Navbar from '../../components/Navbar';
+import usePatient from '../../hooks/usePatient';
+import useReferralLetters from '../../hooks/useReferralLetters';
+import useAddOnProcedures from '../../hooks/useAddOnProcedures';
 import PatientForm from '../forms/PatientForm';
 import AdmissionForm from '../forms/AdmissionForm';
 import InsuranceForm from '../forms/InsuranceForm';
 import ReferralLetterForm from '../ReferralLetter/ReferralLetterForm';
 import ReferralLetterDetails from '../ReferralLetter/ReferralLetterDetails';
+import AddOnProceduresForm from '../Add_on_Procedures/AddOnProceduresForm';
+import AddOnProceduresDetails from '../Add_on_Procedures/AddOnProceduresDetails';
+import PatientHeader from './PatientHeader';
+import SectionTabs from './SectionTabs';
+import SectionSearch from './SectionSearch';
+import PatientLoading from './PatientLoading';
 import DetailGrid from './DetailGrid';
 import DetailSection from './DetailSection';
 import PatientSummaryCard from './PatientSummaryCard';
@@ -21,19 +31,40 @@ function PatientDisplayPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [patient, setPatient] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [savingSection, setSavingSection] = useState(null);
   const [editingSection, setEditingSection] = useState(null);
-  const [error, setError] = useState('');
   const [showCreateAdmission, setShowCreateAdmission] = useState(false);
   const [showCreateInsurance, setShowCreateInsurance] = useState(false);
   const [showAllAdmissionFields, setShowAllAdmissionFields] = useState(false);
   const [showAllInsuranceFields, setShowAllInsuranceFields] = useState(false);
-  const [referralLetters, setReferralLetters] = useState([]);
-  const [referralLoading, setReferralLoading] = useState(false);
-  const [referralError, setReferralError] = useState('');
   const [showCreateReferral, setShowCreateReferral] = useState(false);
+  const [showCreateAddOn, setShowCreateAddOn] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [patientSearch, setPatientSearch] = useState('');
+  const [admissionSearch, setAdmissionSearch] = useState('');
+  const [insuranceSearch, setInsuranceSearch] = useState('');
+  const [showAdvancedAdmission, setShowAdvancedAdmission] = useState(false);
+  const [showAdvancedInsurance, setShowAdvancedInsurance] = useState(false);
+  const {
+    patient,
+    loading,
+    error,
+    refresh: refreshPatient
+  } = usePatient(id, Boolean(user));
+  const {
+    letters: referralLetters,
+    loading: referralLoading,
+    error: referralError,
+    refresh: refreshReferralLetters,
+    setError: setReferralError
+  } = useReferralLetters(id, Boolean(user));
+  const {
+    procedures: addOnProcedures,
+    loading: addOnLoading,
+    error: addOnError,
+    refresh: refreshAddOnProcedures,
+    setError: setAddOnError
+  } = useAddOnProcedures(id, Boolean(user));
 
   useEffect(() => {
     const initialize = async () => {
@@ -47,42 +78,6 @@ function PatientDisplayPage() {
 
     initialize();
   }, [navigate]);
-
-  useEffect(() => {
-    if (!user) return;
-    fetchPatient();
-  }, [user, id]);
-
-  useEffect(() => {
-    if (!user) return;
-    fetchReferralLetters();
-  }, [user, id]);
-
-  const fetchPatient = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const data = await getPatient(id);
-      setPatient(data);
-    } catch (err) {
-      setError(err.message || 'Failed to fetch patient');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchReferralLetters = async () => {
-    setReferralLoading(true);
-    setReferralError('');
-    try {
-      const data = await getReferralLettersByPatient(id);
-      setReferralLetters(data || []);
-    } catch (err) {
-      setReferralError(err.message || 'Failed to fetch referral letters');
-    } finally {
-      setReferralLoading(false);
-    }
-  };
 
   const handleBack = () => {
     if (isAdmin()) navigate('/admin-dashboard');
@@ -196,171 +191,6 @@ function PatientDisplayPage() {
     ];
   }, [patient]);
 
-  const admissionDetails = useMemo(() => {
-    if (!admission) return [];
-    return [
-      { label: 'Status', value: admission.status },
-      { label: 'Admission Category', value: admission.admission_category },
-      { label: 'Admission Date', value: formatDate(admission.admission_date) },
-      { label: 'Admission Time', value: admission.admission_time },
-      { label: 'Admission To', value: admission.admission_to },
-      { label: 'Type of Accommodation', value: admission.type_of_accommodation },
-      { label: 'Financial Class', value: admission.financial_class },
-      { label: 'Diagnosis', value: admission.diagnosis },
-      { label: 'Operation Date', value: formatDate(admission.operation_date) },
-      { label: 'Operation Time', value: admission.operation_time },
-      {
-        label: 'Type of Operation / Procedure',
-        value: admission.type_of_operation_or_procedure
-      },
-      { label: 'Surgery Duration', value: admission.Surgery_Duration },
-      {
-        label: 'Urgent Investigations',
-        value: admission.urgent_investigations
-      },
-      { label: 'Need to Add Others', value: admission.need_to_add_others },
-      { label: 'Other Investigation', value: admission.other_investigation },
-      {
-        label: 'Instructions to Ward Staff',
-        value: admission.instructions_to_ward_staff
-      },
-      {
-        label: 'Endoscopy Procedures',
-        value: admission.endoscopy_procedures
-      },
-      {
-        label: 'Sedation and Anesthesia',
-        value: admission.Sedation_and_Anesthesia
-      },
-      {
-        label: 'Need to Add More Procedures',
-        value: admission.need_to_add_more_procedures
-      },
-      {
-        label: 'Other Endoscopy Procedures',
-        value: admission.other_endoscopy_procedures
-      },
-      {
-        label: 'Expected Days of Stay',
-        value: admission.expected_days_of_stay
-      },
-      { label: 'Estimated Cost (RM)', value: admission.estimated_cost_RM },
-      {
-        label: 'Additional Information and Individual Risks',
-        value: admission.Additional_Information_and_Individual_Risks
-      },
-      { label: 'Confirmation Of', value: admission.confirmation_of },
-      { label: 'Discharge Date', value: formatDate(admission.discharge_date) },
-      { label: 'Discharge Time', value: admission.discharge_time }
-    ];
-  }, [admission]);
-
-  const insuranceDetails = useMemo(() => {
-    if (!insurance) return [];
-    return [
-      { label: 'Policy Number', value: insurance.Policy_No },
-      { label: 'TPA Name', value: insurance.tpa_name },
-      { label: 'IGL Number', value: insurance.IGL_number },
-      { label: 'IGL Status', value: insurance.IGL_status },
-      { label: 'Estimated Cost', value: insurance.estimated_cost },
-      {
-        label: 'Expected Days of Stay',
-        value: insurance.expected_days_of_stay
-      },
-      { label: 'Admission Reason', value: insurance.admission_reason },
-      { label: 'Accident Date', value: formatDate(insurance.accident_date) },
-      { label: 'Accident Time', value: insurance.accident_time },
-      { label: 'Accident Details', value: insurance.accident_details },
-      {
-        label: 'Illness Symptoms First Appeared On',
-        value: formatDate(insurance.illness_symptoms_first_appeared_on_date)
-      },
-      {
-        label: 'Doctors Consulted for This Illness',
-        value: insurance.doctors_consulted_for_this_illness
-      },
-      {
-        label: 'Doctors or Clinic Contact',
-        value: insurance.doctors_or_clinic_contact
-      },
-      { label: 'Diagnosis', value: insurance.diagnosis },
-      {
-        label: 'How Long Patient Aware of Condition',
-        value: insurance.how_long_is_person_aware_of_this_condition
-      },
-      { label: 'Blood Pressure', value: insurance.blood_pressure },
-      { label: 'Temperature', value: insurance.temperature },
-      { label: 'Pulse', value: insurance.pulse },
-      { label: 'Date First Consulted', value: formatDate(insurance.date_first_consulted) },
-      { label: 'Any Previous Consultation', value: insurance.any_previous_consultaion },
-      {
-        label: 'Details of Previous Consultation',
-        value: insurance.details_of_previous_consultation
-      },
-      { label: 'Was Patient Referred', value: insurance.was_this_patient_referred },
-      { label: 'Patient Referred Details', value: insurance.patient_referred_details },
-      { label: 'Condition Exist Before', value: insurance.condition_exist_before },
-      { label: 'Date', value: formatDate(insurance.date) },
-      { label: 'Disease or Disorder', value: insurance.disease_or_disorder },
-      {
-        label: 'Treatment or Hospitalization Details',
-        value: insurance.treatment_or_hospitalization_details
-      },
-      { label: 'Doctor / Hospital / Clinic', value: insurance.doctor_or_hospital_or_clinic },
-      { label: 'More History', value: insurance.more },
-      { label: 'Date (More History A)', value: formatDate(insurance.date1) },
-      {
-        label: 'Treatment or Hospitalization Details (A)',
-        value: insurance.treatment_or_hospitalization_details1
-      },
-      { label: 'Disease or Disorder (A)', value: insurance.disease_or_disorder1 },
-      { label: 'Doctor / Hospital / Clinic (A)', value: insurance.doctor_or_hospital_or_clinic1 },
-      { label: 'Date (More History B)', value: formatDate(insurance.date2) },
-      {
-        label: 'Treatment or Hospitalization Details (B)',
-        value: insurance.treatment_or_hospitalization_details2
-      },
-      { label: 'Disease or Disorder (B)', value: insurance.disease_or_disorder2 },
-      { label: 'Doctor / Hospital / Clinic (B)', value: insurance.doctor_or_hospital_or_clinic2 },
-      { label: 'Diagnosis Information', value: insurance.diagnosis_information },
-      { label: 'Provisional Diagnosis', value: insurance.provisional_diagnosis },
-      { label: 'Diagnosis Confirmed', value: insurance.diagnosis_confirmed },
-      { label: 'Advised Patient', value: insurance.advised_patient },
-      { label: 'Cause and Pathology', value: insurance.cause_and_pathology },
-      { label: 'Possibility of Relapse', value: insurance.any_possibility_of_relapse },
-      { label: 'Admitting Diagnosis', value: insurance.admitting_diagnosis },
-      {
-        label: 'Admitting Diagnosis Confirmed',
-        value: insurance.admitting_diagnosis_confirmed
-      },
-      {
-        label: 'Admitting Diagnosis Advised Patient',
-        value: insurance.admitting_diagnosis_advised_patien
-      },
-      {
-        label: 'Admitting Diagnosis Cause and Pathology',
-        value: insurance.admitting_diagnosis_cause_and_pathology
-      },
-      {
-        label: 'Admitting Diagnosis Possibility of Relapse',
-        value: insurance.admitting_diagnosisany_possibility_of_relapse
-      },
-      { label: 'Condition Can Be Managed', value: insurance.condition_be_managed },
-      { label: 'Reason for Admission', value: insurance.reason_for_admission },
-      { label: 'Condition Related To', value: insurance.condition_related_to },
-      { label: 'Need to Add Others', value: insurance.need_to_add_others },
-      { label: 'Others', value: insurance.others },
-      { label: 'Type of Operation Procedures', value: insurance.type_of_operation_procedures },
-      { label: 'Need to Add Others Copy', value: insurance.need_to_add_others_copy },
-      { label: 'Condition 1', value: insurance.Condition_1 },
-      { label: 'Condition 2', value: insurance.Condition_2 },
-      { label: 'Since', value: insurance.since },
-      { label: 'Since Copy', value: insurance.since_copy },
-      { label: 'Pregnant Information', value: insurance.pregnant_information },
-      { label: 'Pregnancy Duration', value: insurance.pregnancy_duration }
-    ];
-  }, [insurance]);
-
   const admissionSections = useMemo(() => {
     if (!admission) return [];
     return [
@@ -388,6 +218,7 @@ function PatientDisplayPage() {
       },
       {
         title: 'Investigations & Procedures',
+        advanced: true,
         items: [
           { label: 'Urgent Investigations', value: admission.urgent_investigations },
           { label: 'Other Investigation', value: admission.other_investigation },
@@ -398,6 +229,7 @@ function PatientDisplayPage() {
       },
       {
         title: 'Care Instructions',
+        advanced: true,
         items: [
           { label: 'Instructions to Ward Staff', value: admission.instructions_to_ward_staff },
           { label: 'Additional Notes / Risks', value: admission.Additional_Information_and_Individual_Risks },
@@ -413,6 +245,7 @@ function PatientDisplayPage() {
       },
       {
         title: 'Discharge',
+        advanced: true,
         items: [
           { label: 'Discharge Date', value: formatDate(admission.discharge_date) },
           { label: 'Discharge Time', value: admission.discharge_time }
@@ -467,6 +300,7 @@ function PatientDisplayPage() {
       },
       {
         title: 'Referral & History',
+        advanced: true,
         items: [
           { label: 'Was Patient Referred', value: insurance.was_this_patient_referred },
           { label: 'Patient Referred Details', value: insurance.patient_referred_details },
@@ -479,6 +313,7 @@ function PatientDisplayPage() {
       },
       {
         title: 'Condition & Other Details',
+        advanced: true,
         items: [
           { label: 'Condition Related To', value: insurance.condition_related_to },
           { label: 'Condition Can Be Managed', value: insurance.condition_be_managed },
@@ -488,6 +323,7 @@ function PatientDisplayPage() {
       },
       {
         title: 'Pregnancy',
+        advanced: true,
         items: [
           { label: 'Pregnant Information', value: insurance.pregnant_information },
           { label: 'Pregnancy Duration', value: insurance.pregnancy_duration }
@@ -504,6 +340,14 @@ function PatientDisplayPage() {
 
   const filterItems = (items, showAll) =>
     showAll ? items : items.filter((item) => !isEmptyValue(item.value));
+
+  const filterItemsBySearch = (items, searchTerm) => {
+    if (!searchTerm) return items;
+    const query = searchTerm.toLowerCase();
+    return items.filter((item) =>
+      `${item.label} ${item.value ?? ''}`.toLowerCase().includes(query)
+    );
+  };
 
   const staffDetails = useMemo(() => {
     if (!patient) return [];
@@ -524,9 +368,9 @@ function PatientDisplayPage() {
     try {
       await updatePatient(id, formData);
       setEditingSection(null);
-      fetchPatient();
+      refreshPatient();
     } catch (err) {
-      setError(err.message || 'Failed to update patient');
+      // error handled by hook
     } finally {
       setSavingSection(null);
     }
@@ -540,9 +384,9 @@ function PatientDisplayPage() {
       const { Patient, ...payload } = formData;
       await updateAdmissionRecord(admission.id, payload);
       setEditingSection(null);
-      fetchPatient();
+      refreshPatient();
     } catch (err) {
-      setError(err.message || 'Failed to update admission');
+      // error handled by hook
     } finally {
       setSavingSection(null);
     }
@@ -557,9 +401,9 @@ function PatientDisplayPage() {
       const { pation, ...payload } = formData;
       await updatePatientInsurance(insuranceId, payload);
       setEditingSection(null);
-      fetchPatient();
+      refreshPatient();
     } catch (err) {
-      setError(err.message || 'Failed to update insurance');
+      // error handled by hook
     } finally {
       setSavingSection(null);
     }
@@ -571,9 +415,9 @@ function PatientDisplayPage() {
     try {
       await directus.request(createItem('Admission', formData));
       setShowCreateAdmission(false);
-      await fetchPatient();
+      await refreshPatient();
     } catch (err) {
-      setError(err.message || 'Failed to create admission');
+      // error handled by hook
     } finally {
       setSavingSection(null);
     }
@@ -585,9 +429,9 @@ function PatientDisplayPage() {
     try {
       await directus.request(createItem('insurance', formData));
       setShowCreateInsurance(false);
-      await fetchPatient();
+      await refreshPatient();
     } catch (err) {
-      setError(err.message || 'Failed to create insurance');
+      // error handled by hook
     } finally {
       setSavingSection(null);
     }
@@ -599,7 +443,7 @@ function PatientDisplayPage() {
     try {
       await createReferralLetter(formData);
       setShowCreateReferral(false);
-      await fetchReferralLetters();
+      await refreshReferralLetters();
     } catch (err) {
       setReferralError(err.message || 'Failed to create referral letter');
     } finally {
@@ -607,32 +451,117 @@ function PatientDisplayPage() {
     }
   };
 
-  if (!user || loading) return <div className="loading">Loading patient details...</div>;
+  const handleCreateAddOnProcedure = async (formData) => {
+    setSavingSection('create-add-on');
+    setAddOnError('');
+    try {
+      await createAddOnProcedure(formData);
+      setShowCreateAddOn(false);
+      await refreshAddOnProcedures();
+    } catch (err) {
+      setAddOnError(err.message || 'Failed to create add-on procedure');
+    } finally {
+      setSavingSection(null);
+    }
+  };
+
+  if (!user || loading) return <PatientLoading />;
   if (!patient) return <div className="error-message">Patient not found</div>;
 
   const isStaffView = isStaff();
+  const canManageClinical = isAdmin() || isDoctor();
+  const summaryChips = [
+    { label: 'MRN', value: patient.mrn || 'N/A' },
+    { label: 'Admission', value: admission?.status || 'N/A' },
+    { label: 'IGL', value: insurance?.IGL_status || 'N/A' },
+    {
+      label: 'Updated',
+      value: formatDate(patient.date_updated || patient.date_created)
+    }
+  ];
+
+  const tabs = [
+    { key: 'overview', label: 'Overview' },
+    { key: 'admission', label: 'Admission', hidden: isStaffView },
+    { key: 'insurance', label: 'Insurance', hidden: isStaffView || !admission },
+    { key: 'add-ons', label: 'Add-on Procedures' },
+    { key: 'referrals', label: 'Referrals' }
+  ].filter((tab) => !tab.hidden);
 
   return (
     <div className="display-page">
       <Navbar user={user} />
 
       <div className="display-container">
-        <div className="display-header">
-          <button onClick={handleBack} className="btn-secondary">
-            ← Back
-          </button>
-          <div>
-            <h1 className="page-title">Patient Profile</h1>
-            <p className="page-subtitle">Comprehensive patient overview and editable sections</p>
-          </div>
-          <div className="header-spacer" />
-        </div>
+        <PatientHeader
+          title="Patient Profile"
+          onBack={handleBack}
+          chips={summaryChips}
+          actions={
+            <div className="header-actions-group">
+              {canManageClinical && !admission && (
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={() => {
+                    setActiveTab('admission');
+                    setShowCreateAdmission(true);
+                  }}
+                >
+                  + Admission
+                </button>
+              )}
+              {canManageClinical && admission && requiresInsurance && !insurance && (
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={() => {
+                    setActiveTab('insurance');
+                    setShowCreateInsurance(true);
+                  }}
+                >
+                  + Insurance
+                </button>
+              )}
+              {canManageClinical && (
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => {
+                    setActiveTab('referrals');
+                    setShowCreateReferral(true);
+                  }}
+                >
+                  + Referral
+                </button>
+              )}
+              {canManageClinical && (
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => {
+                    setActiveTab('add-ons');
+                    setShowCreateAddOn(true);
+                  }}
+                >
+                  + Add-on Procedure
+                </button>
+              )}
+            </div>
+          }
+        />
 
         {error && <div className="error-message">{error}</div>}
 
         <PatientSummaryCard patient={patient} admission={admission} insurance={insurance} />
 
-        {isStaffView ? (
+        <SectionTabs
+          tabs={tabs}
+          activeTab={activeTab}
+          onChange={setActiveTab}
+        />
+
+        {activeTab === 'overview' && (isStaffView ? (
           <DetailSection
             title="Patient Summary"
             subtitle="Staff view"
@@ -640,221 +569,302 @@ function PatientDisplayPage() {
             onEdit={() => {}}
             showEdit={false}
           >
-            <DetailGrid items={staffDetails} />
+            <SectionSearch
+              value={patientSearch}
+              onChange={setPatientSearch}
+              placeholder="Search patient details"
+            />
+            <DetailGrid items={filterItemsBySearch(staffDetails, patientSearch)} />
           </DetailSection>
         ) : (
-          <>
-            <DetailSection
-              title="Patient Details"
-              subtitle="Full patient information"
-              isEditing={editingSection === 'patient'}
-              onEdit={() => setEditingSection(editingSection === 'patient' ? null : 'patient')}
-              showEdit
-            >
-              {editingSection === 'patient' ? (
-                <PatientForm
-                  initialData={patient}
-                  onSubmit={handlePatientSubmit}
+          <DetailSection
+            title="Patient Details"
+            subtitle="Full patient information"
+            isEditing={editingSection === 'patient'}
+            onEdit={() => setEditingSection(editingSection === 'patient' ? null : 'patient')}
+            showEdit
+          >
+            {editingSection === 'patient' ? (
+              <PatientForm
+                initialData={patient}
+                onSubmit={handlePatientSubmit}
+                onCancel={() => setEditingSection(null)}
+                loading={savingSection === 'patient'}
+                submitLabel="Save Patient"
+                loadingLabel="Saving..."
+                cancelLabel="Cancel"
+              />
+            ) : (
+              <>
+                <SectionSearch
+                  value={patientSearch}
+                  onChange={setPatientSearch}
+                  placeholder="Search patient details"
+                />
+                <DetailGrid items={filterItemsBySearch(patientDetails, patientSearch)} />
+              </>
+            )}
+          </DetailSection>
+        ))}
+
+        {activeTab === 'admission' && !isStaffView && (
+          <DetailSection
+            title="Admission Details"
+            subtitle="Full admission record"
+            isEditing={editingSection === 'admission'}
+            onEdit={() => setEditingSection(editingSection === 'admission' ? null : 'admission')}
+            showEdit={Boolean(admission)}
+          >
+            {admission ? (
+              editingSection === 'admission' ? (
+                <AdmissionForm
+                  patientId={patient.id}
+                  initialData={admissionInitialData}
+                  onSubmit={handleAdmissionSubmit}
                   onCancel={() => setEditingSection(null)}
-                  loading={savingSection === 'patient'}
-                  submitLabel="Save Patient"
+                  loading={savingSection === 'admission'}
+                  submitLabel="Save Admission"
                   loadingLabel="Saving..."
                   cancelLabel="Cancel"
                 />
               ) : (
-                <DetailGrid items={patientDetails} />
-              )}
-            </DetailSection>
-
-            <DetailSection
-              title="Admission Details"
-              subtitle="Full admission record"
-              isEditing={editingSection === 'admission'}
-              onEdit={() => setEditingSection(editingSection === 'admission' ? null : 'admission')}
-              showEdit={Boolean(admission)}
-            >
-              {admission ? (
-                editingSection === 'admission' ? (
-                  <AdmissionForm
-                    patientId={patient.id}
-                    initialData={admissionInitialData}
-                    onSubmit={handleAdmissionSubmit}
-                    onCancel={() => setEditingSection(null)}
-                    loading={savingSection === 'admission'}
-                    submitLabel="Save Admission"
-                    loadingLabel="Saving..."
-                    cancelLabel="Cancel"
+                <>
+                  <div className="detail-actions">
+                    <button
+                      type="button"
+                      className="toggle-btn"
+                      onClick={() => setShowAllAdmissionFields((prev) => !prev)}
+                    >
+                      {showAllAdmissionFields ? 'Hide empty fields' : 'Show empty fields'}
+                    </button>
+                    <button
+                      type="button"
+                      className="toggle-btn"
+                      onClick={() => setShowAdvancedAdmission((prev) => !prev)}
+                    >
+                      {showAdvancedAdmission ? 'Hide advanced' : 'Show advanced'}
+                    </button>
+                  </div>
+                  <SectionSearch
+                    value={admissionSearch}
+                    onChange={setAdmissionSearch}
+                    placeholder="Search admission details"
                   />
-                ) : (
-                  <>
-                    <div className="detail-actions">
-                      <button
-                        type="button"
-                        className="toggle-btn"
-                        onClick={() => setShowAllAdmissionFields((prev) => !prev)}
-                      >
-                        {showAllAdmissionFields ? 'Hide empty fields' : 'Show all fields'}
-                      </button>
-                    </div>
-                    <div className="detail-groups">
-                      {admissionSections.map((section) => {
-                        const items = filterItems(section.items, showAllAdmissionFields);
-                        if (items.length === 0) return null;
-                        return (
-                          <div key={section.title} className="detail-group">
-                            <h4 className="detail-group-title">{section.title}</h4>
-                            <DetailGrid items={items} />
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </>
-                )
-              ) : showCreateAdmission ? (
-                <AdmissionForm
+                  <div className="detail-groups">
+                    {admissionSections.map((section) => {
+                      const items = filterItems(section.items, showAllAdmissionFields);
+                      const filtered = filterItemsBySearch(items, admissionSearch);
+                      if (section.advanced && !showAdvancedAdmission) return null;
+                      if (filtered.length === 0) return null;
+                      return (
+                        <div key={section.title} className="detail-group">
+                          <h4 className="detail-group-title">{section.title}</h4>
+                          <DetailGrid items={filtered} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )
+            ) : showCreateAdmission ? (
+              <AdmissionForm
+                patientId={patient.id}
+                onSubmit={handleCreateAdmission}
+                onCancel={() => setShowCreateAdmission(false)}
+                loading={savingSection === 'create-admission'}
+                submitLabel="Create Admission"
+                loadingLabel="Creating..."
+                cancelLabel="Cancel"
+              />
+            ) : (
+              <div className="empty-state">
+                This patient has no admission record yet.
+                {canManageClinical && (
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    style={{ marginTop: '12px' }}
+                    onClick={() => setShowCreateAdmission(true)}
+                  >
+                    + Create Admission
+                  </button>
+                )}
+              </div>
+            )}
+          </DetailSection>
+        )}
+
+        {activeTab === 'insurance' && !isStaffView && admission && (
+          <DetailSection
+            title="Insurance Details"
+            subtitle="Full insurance record"
+            isEditing={editingSection === 'insurance'}
+            onEdit={() => setEditingSection(editingSection === 'insurance' ? null : 'insurance')}
+            showEdit={Boolean(insurance)}
+          >
+            {insurance ? (
+              editingSection === 'insurance' ? (
+                <InsuranceForm
                   patientId={patient.id}
-                  onSubmit={handleCreateAdmission}
-                  onCancel={() => setShowCreateAdmission(false)}
-                  loading={savingSection === 'create-admission'}
-                  submitLabel="Create Admission"
-                  loadingLabel="Creating..."
+                  initialData={insuranceInitialData}
+                  onSubmit={handleInsuranceSubmit}
+                  onCancel={() => setEditingSection(null)}
+                  loading={savingSection === 'insurance'}
+                  submitLabel="Save Insurance"
+                  loadingLabel="Saving..."
                   cancelLabel="Cancel"
                 />
               ) : (
+                <>
+                  <div className="detail-actions">
+                    <button
+                      type="button"
+                      className="toggle-btn"
+                      onClick={() => setShowAllInsuranceFields((prev) => !prev)}
+                    >
+                      {showAllInsuranceFields ? 'Hide empty fields' : 'Show empty fields'}
+                    </button>
+                    <button
+                      type="button"
+                      className="toggle-btn"
+                      onClick={() => setShowAdvancedInsurance((prev) => !prev)}
+                    >
+                      {showAdvancedInsurance ? 'Hide advanced' : 'Show advanced'}
+                    </button>
+                  </div>
+                  <SectionSearch
+                    value={insuranceSearch}
+                    onChange={setInsuranceSearch}
+                    placeholder="Search insurance details"
+                  />
+                  <div className="detail-groups">
+                    {insuranceSections.map((section) => {
+                      const items = filterItems(section.items, showAllInsuranceFields);
+                      const filtered = filterItemsBySearch(items, insuranceSearch);
+                      if (section.advanced && !showAdvancedInsurance) return null;
+                      if (filtered.length === 0) return null;
+                      return (
+                        <div key={section.title} className="detail-group">
+                          <h4 className="detail-group-title">{section.title}</h4>
+                          <DetailGrid items={filtered} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )
+            ) : requiresInsurance ? (
+              showCreateInsurance ? (
+                <InsuranceForm
+                  patientId={patient.id}
+                  onSubmit={handleCreateInsurance}
+                  onCancel={() => setShowCreateInsurance(false)}
+                  loading={savingSection === 'create-insurance'}
+                  submitLabel="Create Insurance"
+                  loadingLabel="Creating..."
+                  cancelLabel="Cancel"
+                  skipLabel="Skip"
+                  onSkip={() => setShowCreateInsurance(false)}
+                />
+              ) : (
                 <div className="empty-state">
-                  This patient has no admission record yet.
-                  {(isAdmin() || isDoctor()) && (
+                  This patient has no insurance record yet.
+                  {canManageClinical && (
                     <button
                       type="button"
                       className="btn-primary"
                       style={{ marginTop: '12px' }}
-                      onClick={() => setShowCreateAdmission(true)}
+                      onClick={() => setShowCreateInsurance(true)}
                     >
-                      + Create Admission
+                      + Create Insurance
                     </button>
                   )}
                 </div>
-              )}
-            </DetailSection>
-
-            {admission && (
-              <DetailSection
-                title="Insurance Details"
-                subtitle="Full insurance record"
-                isEditing={editingSection === 'insurance'}
-                onEdit={() => setEditingSection(editingSection === 'insurance' ? null : 'insurance')}
-                showEdit={Boolean(insurance)}
-              >
-                {insurance ? (
-                  editingSection === 'insurance' ? (
-                    <InsuranceForm
-                      patientId={patient.id}
-                      initialData={insuranceInitialData}
-                      onSubmit={handleInsuranceSubmit}
-                      onCancel={() => setEditingSection(null)}
-                      loading={savingSection === 'insurance'}
-                      submitLabel="Save Insurance"
-                      loadingLabel="Saving..."
-                      cancelLabel="Cancel"
-                    />
-                  ) : (
-                    <>
-                      <div className="detail-actions">
-                        <button
-                          type="button"
-                          className="toggle-btn"
-                          onClick={() => setShowAllInsuranceFields((prev) => !prev)}
-                        >
-                          {showAllInsuranceFields ? 'Hide empty fields' : 'Show all fields'}
-                        </button>
-                      </div>
-                      <div className="detail-groups">
-                        {insuranceSections.map((section) => {
-                          const items = filterItems(section.items, showAllInsuranceFields);
-                          if (items.length === 0) return null;
-                          return (
-                            <div key={section.title} className="detail-group">
-                              <h4 className="detail-group-title">{section.title}</h4>
-                              <DetailGrid items={items} />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </>
-                  )
-                ) : requiresInsurance ? (
-                  showCreateInsurance ? (
-                    <InsuranceForm
-                      patientId={patient.id}
-                      onSubmit={handleCreateInsurance}
-                      onCancel={() => setShowCreateInsurance(false)}
-                      loading={savingSection === 'create-insurance'}
-                      submitLabel="Create Insurance"
-                      loadingLabel="Creating..."
-                      cancelLabel="Cancel"
-                      skipLabel="Skip"
-                      onSkip={() => setShowCreateInsurance(false)}
-                    />
-                  ) : (
-                    <div className="empty-state">
-                      This patient has no insurance record yet.
-                      {(isAdmin() || isDoctor()) && (
-                        <button
-                          type="button"
-                          className="btn-primary"
-                          style={{ marginTop: '12px' }}
-                          onClick={() => setShowCreateInsurance(true)}
-                        >
-                          + Create Insurance
-                        </button>
-                      )}
-                    </div>
-                  )
-                ) : (
-                  <div className="empty-state">
-                    Insurance is required only for Guarantee Letter admissions.
-                  </div>
-                )}
-              </DetailSection>
+              )
+            ) : (
+              <div className="empty-state">
+                Insurance is required only for Guarantee Letter admissions.
+              </div>
             )}
-          </>
+          </DetailSection>
         )}
 
-        <DetailSection
-          title="Referral Letters"
-          subtitle="Referral history for this patient"
-          isEditing={false}
-          onEdit={() => {}}
-          showEdit={false}
-        >
-          {(isAdmin() || isDoctor()) && !showCreateReferral && (
-            <div className="detail-actions">
-              <button
-                type="button"
-                className="icon-button"
-                onClick={() => setShowCreateReferral(true)}
-              >
-                <span className="icon">+</span>
-                Create Referral Letter
-              </button>
-            </div>
-          )}
+        {activeTab === 'referrals' && (
+          <DetailSection
+            title="Referral Letters"
+            subtitle="Referral history for this patient"
+            isEditing={false}
+            onEdit={() => {}}
+            showEdit={false}
+          >
+            {canManageClinical && !showCreateReferral && (
+              <div className="detail-actions">
+                <button
+                  type="button"
+                  className="icon-button"
+                  onClick={() => setShowCreateReferral(true)}
+                >
+                  <span className="icon">+</span>
+                  Create Referral Letter
+                </button>
+              </div>
+            )}
 
-          {(isAdmin() || isDoctor()) && showCreateReferral && (
-            <ReferralLetterForm
-              patientId={patient.id}
-              onSubmit={handleCreateReferral}
-              onCancel={() => setShowCreateReferral(false)}
-              loading={savingSection === 'create-referral'}
+            {canManageClinical && showCreateReferral && (
+              <ReferralLetterForm
+                patientId={patient.id}
+                onSubmit={handleCreateReferral}
+                onCancel={() => setShowCreateReferral(false)}
+                loading={savingSection === 'create-referral'}
+              />
+            )}
+
+            <ReferralLetterDetails
+              letters={referralLetters}
+              loading={referralLoading}
+              error={referralError}
             />
-          )}
+          </DetailSection>
+        )}
 
-          <ReferralLetterDetails
-            letters={referralLetters}
-            loading={referralLoading}
-            error={referralError}
-          />
-        </DetailSection>
+        {activeTab === 'add-ons' && (
+          <DetailSection
+            title="Add-on Procedures"
+            subtitle="Procedures linked to this patient"
+            isEditing={false}
+            onEdit={() => {}}
+            showEdit={false}
+          >
+            {canManageClinical && !showCreateAddOn && (
+              <div className="detail-actions">
+                <button
+                  type="button"
+                  className="icon-button"
+                  onClick={() => setShowCreateAddOn(true)}
+                >
+                  <span className="icon">+</span>
+                  Create Add-on Procedure
+                </button>
+              </div>
+            )}
+
+            {canManageClinical && showCreateAddOn && (
+              <AddOnProceduresForm
+                patientId={patient.id}
+                onSubmit={handleCreateAddOnProcedure}
+                onCancel={() => setShowCreateAddOn(false)}
+                loading={savingSection === 'create-add-on'}
+              />
+            )}
+
+            <AddOnProceduresDetails
+              procedures={addOnProcedures}
+              loading={addOnLoading}
+              error={addOnError}
+            />
+          </DetailSection>
+        )}
+
       </div>
     </div>
   );

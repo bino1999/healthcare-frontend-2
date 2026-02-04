@@ -284,12 +284,12 @@ function AdminDashboard() {
         {loading ? (
           <div className="loading">Loading patients...</div>
         ) : (
-          <div className="table-container">
-            <table className="data-table">
+          <div className="table-container dashboard-table-container">
+            <table className="data-table dashboard-table">
               <thead>
                 <tr>
                   <th>MRN</th>
-                  <th>Patient Name</th>
+                  <th className="sticky-col">Patient Name</th>
                   <th>Bed No</th>
                   <th>Bed Status</th>
                   <th>Status</th>
@@ -319,7 +319,11 @@ function AdminDashboard() {
                     return (
                       <tr key={patient.id}>
                         <td>{patient.mrn}</td>
-                        <td><strong>{patient.patient_name}</strong></td>
+                        <td className="sticky-col">
+                          <span className="truncate" title={patient.patient_name}>
+                            <strong>{patient.patient_name}</strong>
+                          </span>
+                        </td>
                         <td>
                           <button
                             type="button"
