@@ -1,0 +1,362 @@
+/* IGL Status Modal Styles */
+.igl-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.igl-modal-container {
+  background: white;
+  border-radius: 16px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  animation: slideUp 0.3s ease-out;
+  overflow: hidden;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.igl-modal-header {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 24px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 16px 16px 0 0;
+}
+
+.igl-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.igl-modal-icon {
+  font-size: 1.75rem;
+}
+
+.igl-modal-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 28px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  line-height: 1;
+}
+
+.igl-modal-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.igl-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 30px;
+}
+
+.igl-patient-info {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  border: 1px solid #bbf7d0;
+}
+
+.igl-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.igl-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.igl-info-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #065f46;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.igl-info-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #064e3b;
+  word-break: break-word;
+}
+
+.igl-current-status {
+  background: white;
+  padding: 16px 20px;
+  border-radius: 10px;
+  margin-bottom: 24px;
+  border: 2px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.igl-current-status-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.igl-status-badge {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: capitalize;
+  display: inline-block;
+}
+
+.igl-status-badge.pending {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.igl-status-badge.approved {
+  background-color: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+
+.igl-status-badge.rejected {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.igl-status-badge.partial {
+  background-color: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #93c5fd;
+}
+
+.igl-form-section {
+  margin-bottom: 24px;
+}
+
+.igl-form-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.igl-form-label::before {
+  content: '📋';
+  font-size: 1.1rem;
+}
+
+.igl-select-wrapper {
+  position: relative;
+}
+
+.igl-select {
+  width: 100%;
+  padding: 14px 40px 14px 16px;
+  font-size: 1rem;
+  border: 2px solid #d1d5db;
+  border-radius: 10px;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  appearance: none;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.igl-select:hover {
+  border-color: #10b981;
+}
+
+.igl-select:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.igl-select:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.igl-select-arrow {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #6b7280;
+  font-size: 1.2rem;
+}
+
+.igl-error-message {
+  background-color: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.875rem;
+}
+
+.igl-error-message::before {
+  content: '⚠️';
+  font-size: 1.2rem;
+}
+
+.igl-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding-top: 24px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.igl-btn {
+  padding: 12px 28px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.igl-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.igl-btn-cancel {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.igl-btn-cancel:hover:not(:disabled) {
+  background-color: #e5e7eb;
+}
+
+.igl-btn-submit {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
+}
+
+.igl-btn-submit:hover:not(:disabled) {
+  box-shadow: 0 6px 10px rgba(16, 185, 129, 0.3);
+  transform: translateY(-1px);
+}
+
+.igl-btn-submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.igl-help-text {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.igl-help-text::before {
+  content: 'ℹ️';
+  font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .igl-modal-container {
+    margin: 10px;
+    max-width: 100%;
+  }
+
+  .igl-modal-header {
+    padding: 20px;
+  }
+
+  .igl-modal-title {
+    font-size: 1.25rem;
+  }
+
+  .igl-modal-body {
+    padding: 20px;
+  }
+
+  .igl-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .igl-modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .igl-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

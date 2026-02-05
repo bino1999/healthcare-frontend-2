@@ -3,10 +3,11 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getUser } from '../utils/auth';
 import { initAuth } from '../api/auth';
-import { assignBedToPatient, getPatients, updateAdmissionRecord } from '../api/patients';
+import { assignBedToPatient, getPatients, updateAdmissionRecord, updatePatientInsurance } from '../api/patients';
 import Navbar from '../components/Navbar';
 import AssignBedModal from './bedcollection/AssignBedModal';
 import AdmissionStatusModal from '../components/AdmissionStatusModal';
+import IglStatusModal from '../components/IglStatusModal';
 import IglStatusPieChart from './charts/IglStatusPieChart';
 import AdmissionStatusPieChart from './charts/AdmissionStatusPieChart';
 import FiltersBar from './dashboard-widgets/FiltersBar';
@@ -28,6 +29,11 @@ function StaffDashboard() {
   const [selectedStatusPatient, setSelectedStatusPatient] = useState(null);
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [statusError, setStatusError] = useState('');
+  const [iglModalOpen, setIglModalOpen] = useState(false);
+  const [selectedIglPatient, setSelectedIglPatient] = useState(null);
+  const [selectedInsurance, setSelectedInsurance] = useState(null);
+  const [iglUpdating, setIglUpdating] = useState(false);
+  const [iglError, setIglError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
@@ -198,6 +204,31 @@ function StaffDashboard() {
     }
   };
 
+  const handleOpenIglStatus = (patient, insurance) => {
+    if (!insurance?.id) return;
+    setSelectedIglPatient(patient);
+    setSelectedInsurance(insurance);
+    setIglError('');
+    setIglModalOpen(true);
+  };
+
+  const handleIglStatusSave = async (newStatus) => {
+    if (!selectedInsurance?.id) return;
+    setIglUpdating(true);
+    setIglError('');
+    try {
+      await updatePatientInsurance(selectedInsurance.id, { IGL_status: newStatus });
+      setIglModalOpen(false);
+      setSelectedInsurance(null);
+      setSelectedIglPatient(null);
+      await fetchPatients();
+    } catch (err) {
+      setIglError(err.message || 'Failed to update IGL status');
+    } finally {
+      setIglUpdating(false);
+    }
+  };
+
   const handleAssignBed = async (bed) => {
     if (!selectedPatient) return;
     setAssigning(true);
@@ -314,7 +345,19 @@ function StaffDashboard() {
                           </button>
                         </td>
                         <td>{insurance?.tpa_name || 'N/A'}</td>
-                        <td>{insurance?.IGL_status || 'N/A'}</td>
+                        <td>
+                          <button
+                            type="button"
+                            className="status-button"
+                            onClick={() => handleOpenIglStatus(patient, insurance)}
+                            disabled={!insurance?.id || iglUpdating}
+                            title={insurance?.id ? 'Update IGL status' : 'No insurance record'}
+                          >
+                            <span className={`igl-status ${insurance?.IGL_status || ''}`}>
+                              {insurance?.IGL_status || 'N/A'}
+                            </span>
+                          </button>
+                        </td>
                         <td>{insurance?.Policy_No || 'N/A'}</td>
                         <td>{insurance?.IGL_number || 'N/A'}</td>
                         <td>{formatDate(patient.date_created)}</td>
@@ -362,6 +405,22 @@ function StaffDashboard() {
         onSave={handleStatusSave}
         loading={statusUpdating}
         error={statusError}
+      />
+
+      <IglStatusModal
+        isOpen={iglModalOpen}
+        patient={selectedIglPatient}
+        insurance={selectedInsurance}
+        onClose={() => {
+          if (!iglUpdating) {
+            setIglModalOpen(false);
+            setSelectedInsurance(null);
+            setSelectedIglPatient(null);
+          }
+        }}
+        onSave={handleIglStatusSave}
+        loading={iglUpdating}
+        error={iglError}
       />
 
       {assignError && <div className="error-message">{assignError}</div>}
