@@ -118,7 +118,7 @@ const AiAnalysisModal = ({ isOpen, onClose, loading, error, analysisData }) => {
     <div className="ai-modal-backdrop" onClick={onClose}>
       <div className="ai-modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="ai-modal-header">
-          <h3>AI Claim Risk Analysis</h3>
+          <h3>Predictive Claims Analysis</h3>
           <button className="ai-modal-close" onClick={onClose}>×</button>
         </div>
 
@@ -126,7 +126,7 @@ const AiAnalysisModal = ({ isOpen, onClose, loading, error, analysisData }) => {
           {loading && (
             <div className="ai-loading-state">
               <div className="ai-spinner"></div>
-              <p>Analyzing claim data with AI...</p>
+              <p>Analyzing claim data ...</p>
             </div>
           )}
 
