@@ -139,6 +139,15 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
     if (!admissionData.admission_time) newErrors.admission_time = 'Admission time is required';
     if (!admissionData.financial_class) newErrors.financial_class = 'Financial class is required';
     if (!admissionData.diagnosis.trim()) newErrors.diagnosis = 'Diagnosis is required';
+    if (!admissionData.type_of_accommodation) {
+      newErrors.type_of_accommodation = 'Type of accommodation is required';
+    }
+    if (!admissionData.expected_days_of_stay) {
+      newErrors.expected_days_of_stay = 'Expected length of stay is required';
+    }
+    if (admissionData.estimated_cost_RM === '' || admissionData.estimated_cost_RM === null) {
+      newErrors.estimated_cost_RM = 'Estimated cost is required';
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -438,12 +447,14 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
         </div>
 
         <div style={styles.formGroup}>
-          <label style={styles.label}>Type of Accommodation</label>
+            <label style={styles.label}>
+              Type of Accommodation <span style={styles.required}>*</span>
+            </label>
           <select
             name="type_of_accommodation"
             value={admissionData.type_of_accommodation}
             onChange={handleChange}
-            style={styles.select}
+              style={errors.type_of_accommodation ? styles.inputError : styles.select}
             disabled={loading}
           >
             <option value="">Select Accommodation Type</option>
@@ -455,6 +466,9 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
             <option value="4 Bedded - RM100">4 Bedded - RM100</option>
             <option value="Isolation Room - RM250">Isolation Room - RM250</option>
           </select>
+            {errors.type_of_accommodation && (
+              <span style={styles.errorMessage}>{errors.type_of_accommodation}</span>
+            )}
         </div>
 
         <div style={styles.formGroup}>
@@ -703,21 +717,26 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
 
         <div style={styles.formRow}>
           <div style={styles.formGroup}>
-            <label style={styles.label}>Expected Length of Stay (Days)</label>
+            <label style={styles.label}>
+              Expected Length of Stay (Days) <span style={styles.required}>*</span>
+            </label>
             <input
               type="number"
               name="expected_days_of_stay"
               value={admissionData.expected_days_of_stay}
               onChange={handleChange}
               min="1"
-              style={styles.input}
+              style={errors.expected_days_of_stay ? styles.inputError : styles.input}
               placeholder="Number of days"
               disabled={loading}
             />
+            {errors.expected_days_of_stay && (
+              <span style={styles.errorMessage}>{errors.expected_days_of_stay}</span>
+            )}
           </div>
 
           <div style={styles.formGroup}>
-            <label style={styles.label}>Estimated Cost (RM)</label>
+            <label style={styles.label}>Estimated Cost (RM) <span style={styles.required}>*</span></label>
             <input
               type="number"
               name="estimated_cost_RM"
@@ -725,10 +744,13 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
               onChange={handleChange}
               min="0"
               step="0.01"
-              style={styles.input}
+              style={errors.estimated_cost_RM ? styles.inputError : styles.input}
               placeholder="0.00"
               disabled={loading}
             />
+            {errors.estimated_cost_RM && (
+              <span style={styles.errorMessage}>{errors.estimated_cost_RM}</span>
+            )}
           </div>
         </div>
 

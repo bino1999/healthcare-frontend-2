@@ -29,6 +29,9 @@ function AddOnProceduresForm({ onSubmit, onCancel, loading, initialData = null, 
     if (!formData.plan_date) {
       newErrors.plan_date = 'Plan date is required';
     }
+    if (formData.estimated_cost === '' || formData.estimated_cost === null) {
+      newErrors.estimated_cost = 'Estimated cost is required';
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -41,7 +44,10 @@ function AddOnProceduresForm({ onSubmit, onCancel, loading, initialData = null, 
     const submissionData = {
       Procedures_patient: formData.Procedures_patient,
       plan_date: formData.plan_date,
-      estimated_cost: formData.estimated_cost,
+      estimated_cost:
+        formData.estimated_cost === '' || formData.estimated_cost === null
+          ? null
+          : parseFloat(formData.estimated_cost),
       procedure_description: formData.procedure_description
     };
 
@@ -176,15 +182,22 @@ function AddOnProceduresForm({ onSubmit, onCancel, loading, initialData = null, 
         </div>
 
         <div style={styles.formGroup}>
-          <label style={styles.label}>Estimated Cost (RM)</label>
+          <label style={styles.label}>
+            Estimated Cost (RM) <span style={styles.required}>*</span>
+          </label>
           <input
-            type="text"
+            type="number"
             name="estimated_cost"
             value={formData.estimated_cost}
             onChange={handleChange}
-            style={styles.input}
-            placeholder="Enter estimated cost"
+            style={errors.estimated_cost ? styles.inputError : styles.input}
+            placeholder="0.00"
+            min="0"
+            step="0.01"
           />
+          {errors.estimated_cost && (
+            <span style={styles.errorMessage}>{errors.estimated_cost}</span>
+          )}
         </div>
 
         {errors.Procedures_patient && (

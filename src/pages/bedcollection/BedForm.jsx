@@ -24,13 +24,13 @@ function BedForm({ wards = [], onSubmit, onCancel, loading, initialData = null }
   ];
 
   const bedCategoryOptions = [
-    'General Ward',
-    'Semi-Private',
-    'Private (Deluxe)',
-    'ICU (Intensive Care Unit)',
-    'NICU (Neonatal Intensive Care)',
-    'Isolation Ward',
-    'Emergency / Triage'
+    'Executive Suite',
+    'VIP',
+    'Single Deluxe',
+    'Single Standard',
+    '2 Bedded',
+    '4 Bedded',
+    'Isolation Room'
   ];
 
   useEffect(() => {

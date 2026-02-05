@@ -6,6 +6,7 @@ import { createPatient } from '../../api/patients';
 import Navbar from '../../components/Navbar';
 import PatientForm from './PatientForm';
 import AdmissionForm from './AdmissionForm';
+import { calculateTotalFee } from '../../utils/costs';
 
 function CreatePatientPage() {
   const navigate = useNavigate();
@@ -79,7 +80,11 @@ function CreatePatientPage() {
       }
 
       const { Patient, ...admissionPayload } = admissionData;
-      const patient = await createPatient(patientDraft, admissionPayload);
+      const total_fee = calculateTotalFee(admissionPayload, []);
+      const patient = await createPatient(
+        { ...patientDraft, total_fee },
+        admissionPayload
+      );
       console.log('Patient with admission created:', patient);
 
       alert('Patient and admission created successfully!');

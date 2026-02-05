@@ -98,6 +98,10 @@ export async function createPatient(patientData, admissionData = null) {
       email: patientData.email
     };
 
+    if (patientData.total_fee !== undefined) {
+      payload.total_fee = patientData.total_fee;
+    }
+
     if (admissionData) {
       payload.patient_Admission = admissionData;
     }

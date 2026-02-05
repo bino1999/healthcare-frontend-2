@@ -25,6 +25,9 @@ import PatientLoading from './PatientLoading';
 import DetailGrid from './DetailGrid';
 import DetailSection from './DetailSection';
 import PatientSummaryCard from './PatientSummaryCard';
+import { calculateTotalFee } from '../../utils/costs';
+import { analyzeClaimRisk } from '../../ai-analysis/analyzeClaimRisk';
+import AiAnalysisModal from '../../ai-analysis/AiAnalysisModal';
 import './displayPatient.css';
 
 function PatientDisplayPage() {
@@ -39,6 +42,10 @@ function PatientDisplayPage() {
   const [showAllInsuranceFields, setShowAllInsuranceFields] = useState(false);
   const [showCreateReferral, setShowCreateReferral] = useState(false);
   const [showCreateAddOn, setShowCreateAddOn] = useState(false);
+  const [aiAnalysisLoading, setAiAnalysisLoading] = useState(false);
+  const [aiAnalysisError, setAiAnalysisError] = useState('');
+  const [aiAnalysisData, setAiAnalysisData] = useState(null);
+  const [showAiModal, setShowAiModal] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [patientSearch, setPatientSearch] = useState('');
   const [admissionSearch, setAdmissionSearch] = useState('');
@@ -99,6 +106,18 @@ function PatientDisplayPage() {
     if (Number.isNaN(date.getTime())) return '';
     return date.toISOString().split('T')[0];
   };
+
+  const formatCurrency = (value) => {
+    if (value === null || value === undefined || value === '') return 'N/A';
+    const amount = Number(value);
+    if (!Number.isFinite(amount)) return 'N/A';
+    return new Intl.NumberFormat('en-MY', {
+      style: 'currency',
+      currency: 'MYR',
+      minimumFractionDigits: 2
+    }).format(amount);
+  };
+
 
   const getLatestAdmission = (admissions) => {
     if (!admissions) return null;
@@ -362,6 +381,49 @@ function PatientDisplayPage() {
     ];
   }, [patient, insurance]);
 
+  const syncTotalFee = async (admissionData, procedures = addOnProcedures) => {
+    if (!admissionData) return;
+    const total_fee = calculateTotalFee(admissionData, procedures);
+    try {
+      await updatePatient(id, { total_fee });
+    } catch (err) {
+      console.error('Update total fee error:', err);
+    }
+  };
+
+  const handleRunAiAnalysis = async () => {
+    if (!patient) return;
+    setShowAiModal(true);
+    setAiAnalysisLoading(true);
+    setAiAnalysisError('');
+    setAiAnalysisData(null);
+
+    console.log('Starting AI analysis...');
+    console.log('Endpoint:', import.meta.env.VITE_AI_ANALYSIS_URL);
+
+    try {
+      const { formatted, raw } = await analyzeClaimRisk({
+        patient,
+        admission,
+        insurance,
+        procedures: addOnProcedures
+      });
+
+      console.log('AI analysis completed:', { formatted, raw });
+
+      if (!formatted && !raw) {
+        throw new Error('AI analysis returned an empty response.');
+      }
+
+      setAiAnalysisData(raw);
+    } catch (err) {
+      console.error('AI analysis error:', err);
+      setAiAnalysisError(err.message || 'Failed to run AI analysis.');
+    } finally {
+      setAiAnalysisLoading(false);
+    }
+  };
+
   const handlePatientSubmit = async (formData) => {
     setSavingSection('patient');
     setError('');
@@ -383,6 +445,7 @@ function PatientDisplayPage() {
     try {
       const { Patient, ...payload } = formData;
       await updateAdmissionRecord(admission.id, payload);
+      await syncTotalFee(payload, addOnProcedures);
       setEditingSection(null);
       refreshPatient();
     } catch (err) {
@@ -414,6 +477,7 @@ function PatientDisplayPage() {
     setError('');
     try {
       await directus.request(createItem('Admission', formData));
+      await syncTotalFee(formData, addOnProcedures);
       setShowCreateAdmission(false);
       await refreshPatient();
     } catch (err) {
@@ -455,7 +519,15 @@ function PatientDisplayPage() {
     setSavingSection('create-add-on');
     setAddOnError('');
     try {
-      await createAddOnProcedure(formData);
+      const createdProcedure = await createAddOnProcedure(formData);
+      const nextProcedures = [
+        ...addOnProcedures,
+        {
+          ...createdProcedure,
+          estimated_cost: createdProcedure?.estimated_cost ?? formData.estimated_cost
+        }
+      ];
+      await syncTotalFee(admission, nextProcedures);
       setShowCreateAddOn(false);
       await refreshAddOnProcedures();
     } catch (err) {
@@ -474,6 +546,7 @@ function PatientDisplayPage() {
     { label: 'MRN', value: patient.mrn || 'N/A' },
     { label: 'Admission', value: admission?.status || 'N/A' },
     { label: 'IGL', value: insurance?.IGL_status || 'N/A' },
+    { label: 'Total Fee', value: formatCurrency(patient.total_fee) },
     {
       label: 'Updated',
       value: formatDate(patient.date_updated || patient.date_created)
@@ -511,7 +584,7 @@ function PatientDisplayPage() {
                   + Admission
                 </button>
               )}
-              {canManageClinical && admission && requiresInsurance && !insurance && (
+              {/* {canManageClinical && admission && requiresInsurance && !insurance && (
                 <button
                   type="button"
                   className="btn-primary"
@@ -522,7 +595,7 @@ function PatientDisplayPage() {
                 >
                   + Insurance
                 </button>
-              )}
+              )} */}
               {canManageClinical && (
                 <button
                   type="button"
@@ -545,6 +618,16 @@ function PatientDisplayPage() {
                   }}
                 >
                   + Add-on Procedure
+                </button>
+              )}
+              {canManageClinical && (
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={handleRunAiAnalysis}
+                  disabled={aiAnalysisLoading}
+                >
+                  {aiAnalysisLoading ? 'Running AI Analysis...' : '+ AI Analysis'}
                 </button>
               )}
             </div>
@@ -864,6 +947,14 @@ function PatientDisplayPage() {
             />
           </DetailSection>
         )}
+
+        <AiAnalysisModal
+          isOpen={showAiModal}
+          onClose={() => setShowAiModal(false)}
+          loading={aiAnalysisLoading}
+          error={aiAnalysisError}
+          analysisData={aiAnalysisData}
+        />
 
       </div>
     </div>

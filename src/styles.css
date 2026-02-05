@@ -324,20 +324,89 @@ body {
 
 /* Dashboard table compact styling */
 .dashboard-table th {
-  padding: 0.75rem 0.9rem;
-  font-size: 0.72rem;
-  letter-spacing: 0.1em;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: #f1f5f9;
+  color: #0f172a;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .dashboard-table td {
-  padding: 0.7rem 0.9rem;
-  font-size: 0.85rem;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.86rem;
+  color: #0f172a;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .dashboard-table .status-badge,
 .dashboard-table .igl-status {
   font-size: 0.7rem;
   padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  font-weight: 700;
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.dashboard-table {
+  background: #ffffff;
+}
+
+.dashboard-table tbody tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+.dashboard-table tbody tr:hover {
+  background: #eef2f7;
+}
+
+.dashboard-table .sticky-col {
+  background: #ffffff;
+}
+
+.dashboard-table .truncate strong {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.dashboard-table .status-badge {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.dashboard-table .status-Admitted,
+.dashboard-table .status-Admission\ Pending,
+.dashboard-table .status-Discharge\ Pending,
+.dashboard-table .status-Today\ Discharged,
+.dashboard-table .status-KIV\ Discharged,
+.dashboard-table .status-Tomorrow\ Discharge {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.dashboard-table .igl-status.Approved,
+.dashboard-table .igl-status.approved,
+.dashboard-table .igl-status.Approved\ with\ GL {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.dashboard-table .igl-status.Pending,
+.dashboard-table .igl-status.pending,
+.dashboard-table .igl-status.In\ Progress {
+  background: #fef9c3;
+  color: #a16207;
+}
+
+.dashboard-table .igl-status.Rejected,
+.dashboard-table .igl-status.rejected {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.dashboard-table td.actions button {
+  font-size: 0.78rem;
 }
 
 .table-link-button {
