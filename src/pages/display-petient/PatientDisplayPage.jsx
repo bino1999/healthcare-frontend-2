@@ -398,7 +398,7 @@ function PatientDisplayPage() {
     setAiAnalysisError('');
     setAiAnalysisData(null);
 
-    console.log('Starting AI analysis...');
+    console.log('Starting Predictive Claims ...');
     console.log('Endpoint:', import.meta.env.VITE_AI_ANALYSIS_URL);
 
     try {
@@ -409,16 +409,16 @@ function PatientDisplayPage() {
         procedures: addOnProcedures
       });
 
-      console.log('AI analysis completed:', { formatted, raw });
+      console.log('Predictive Claims  completed:', { formatted, raw });
 
       if (!formatted && !raw) {
-        throw new Error('AI analysis returned an empty response.');
+        throw new Error('Predictive Claims  returned an empty response.');
       }
 
       setAiAnalysisData(raw);
     } catch (err) {
-      console.error('AI analysis error:', err);
-      setAiAnalysisError(err.message || 'Failed to run AI analysis.');
+      console.error('Predictive Claims  error:', err);
+      setAiAnalysisError(err.message || 'Failed to run Predictive Claims .');
     } finally {
       setAiAnalysisLoading(false);
     }
@@ -627,7 +627,7 @@ function PatientDisplayPage() {
                   onClick={handleRunAiAnalysis}
                   disabled={aiAnalysisLoading}
                 >
-                  {aiAnalysisLoading ? 'Running AI Analysis...' : '+ AI Analysis'}
+                  {aiAnalysisLoading ? 'Running Predictive Claims ...' : '+ Predictive Claims '}
                 </button>
               )}
             </div>

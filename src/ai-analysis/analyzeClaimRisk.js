@@ -10,7 +10,7 @@ export const analyzeClaimRisk = async ({ patient, admission, insurance, procedur
   console.log('analyzeClaimRisk called with endpoint:', endpoint);
 
   if (!endpoint) {
-    throw new Error('AI analysis endpoint is not configured. Set VITE_AI_ANALYSIS_URL.');
+    throw new Error('Predictive Claims  endpoint is not configured. Set VITE_AI_ANALYSIS_URL.');
   }
 
   console.log('Sending request to:', endpoint);
@@ -28,7 +28,7 @@ export const analyzeClaimRisk = async ({ patient, admission, insurance, procedur
   if (!response.ok) {
     const errorText = await response.text();
     console.error('Response error:', errorText);
-    throw new Error(`AI analysis request failed: ${response.status} ${errorText}`);
+    throw new Error(`Predictive Claims  request failed: ${response.status} ${errorText}`);
   }
 
   let data;
