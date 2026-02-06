@@ -1,5 +1,5 @@
 // src/pages/AdminDashboard.jsx
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { initAuth } from '../api/auth';
 import { getPatients } from '../api/patients';
@@ -18,6 +18,7 @@ function DoctorDashboard() {
   const [initializing, setInitializing] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [operationDateFilter, setOperationDateFilter] = useState('');
+  const [expandedRows, setExpandedRows] = useState(new Set());
 
   useEffect(() => {
     const initialize = async () => {
@@ -241,26 +242,26 @@ function DoctorDashboard() {
           <div className="loading">Loading patients...</div>
         ) : (
           <div className="table-container dashboard-table-container">
+            <div className="table-info">
+              <span>Showing {filteredPatients.length} patient{filteredPatients.length !== 1 ? 's' : ''}</span>
+            </div>
             <table className="data-table dashboard-table">
               <thead>
                 <tr>
-                  <th>MRN</th>
+                  <th className="th-expand"></th>
                   <th className="sticky-col">Patient Name</th>
-                  <th>Bed No</th>
-                  <th>Status</th>
-                  <th>Insurance Company</th>
+                  <th>MRN</th>
+                  <th>Bed</th>
+                  <th>Admission Status</th>
                   <th>IGL Status</th>
-                  <th>Admission Date</th>
                   <th>Operation Date</th>
-                  <th>Operation Time</th>
-                  <th>Admitted By</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredPatients.length === 0 ? (
                   <tr>
-                    <td colSpan="11" className="text-center">
+                    <td colSpan="8" className="text-center">
                       No patients found.
                     </td>
                   </tr>
@@ -269,42 +270,108 @@ function DoctorDashboard() {
                     const admission = getLatestAdmission(patient.patient_Admission);
                     const insurance = getInsurance(patient.insurance);
                     const bed = getBed(patient.patient_bed);
+                    const isExpanded = expandedRows.has(patient.id);
 
                     return (
-                      <tr key={patient.id}>
-                        <td>{patient.mrn}</td>
-                        <td className="sticky-col">
-                          <span className="truncate" title={patient.patient_name}>
-                            <strong>{patient.patient_name}</strong>
-                          </span>
-                        </td>
-                        <td>{bed?.bed_no || 'N/A'}</td>
-                        <td>
-                          <span className={`status-badge status-${admission?.status || 'unknown'}`}>
-                            {admission?.status || 'N/A'}
-                          </span>
-                        </td>
-                        <td>{insurance?.tpa_name || 'N/A'}</td>
-                        <td>
-                          <span className={`igl-status ${insurance?.IGL_status || ''}`}>
-                            {insurance?.IGL_status || 'N/A'}
-                          </span>
-                        </td>
-                        <td>{formatDate(admission?.admission_date)}</td>
-                        <td>{formatDate(admission?.operation_date)}</td>
-                        <td>{formatTime(admission?.operation_time)}</td>
-                        <td>
-                          {patient.user_created?.first_name} {patient.user_created?.last_name}
-                        </td>
-                        <td className="actions">
-                          <button 
-                            onClick={() => navigate(`/patients/view/${patient.id}`)}
-                            className="btn-view"
-                          >
-                            View
-                          </button>
-                        </td>
-                      </tr>
+                      <React.Fragment key={patient.id}>
+                        <tr className={isExpanded ? 'row-expanded' : ''}>
+                          <td className="td-expand">
+                            <button
+                              type="button"
+                              className="expand-btn"
+                              onClick={() => {
+                                const newExpanded = new Set(expandedRows);
+                                if (isExpanded) {
+                                  newExpanded.delete(patient.id);
+                                } else {
+                                  newExpanded.add(patient.id);
+                                }
+                                setExpandedRows(newExpanded);
+                              }}
+                              title={isExpanded ? 'Collapse' : 'Expand'}
+                            >
+                              {isExpanded ? '▼' : '▶'}
+                            </button>
+                          </td>
+                          <td className="sticky-col">
+                            <span className="patient-name" title={patient.patient_name}>
+                              <strong>{patient.patient_name}</strong>
+                            </span>
+                          </td>
+                          <td className="td-mrn">{patient.mrn}</td>
+                          <td>
+                            <div className="bed-cell">
+                              <span className="bed-link disabled">{bed?.bed_no || 'N/A'}</span>
+                              {bed?.Status && (
+                                <span className={`bed-status-tag ${bed.Status.toLowerCase()}`}>
+                                  {bed.Status}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td>
+                            <span className={`status-badge status-${(admission?.status || 'unknown').replace(/\s+/g, '-')}`}>
+                              {admission?.status || 'N/A'}
+                            </span>
+                          </td>
+                          <td>
+                            <span className={`igl-badge ${(insurance?.IGL_status || '').toLowerCase().replace(/\s+/g, '-')}`}>
+                              {insurance?.IGL_status || 'N/A'}
+                            </span>
+                          </td>
+                          <td className="td-date">{formatDate(admission?.operation_date)}</td>
+                          <td className="actions">
+                            <button 
+                              onClick={() => navigate(`/patients/view/${patient.id}`)}
+                              className="btn-view"
+                            >
+                              View
+                            </button>
+                          </td>
+                        </tr>
+                        {isExpanded && (
+                          <tr className="expanded-details-row">
+                            <td colSpan="8">
+                              <div className="expanded-details">
+                                <div className="detail-item">
+                                  <span className="detail-label">Insurance</span>
+                                  <span className="detail-value">{insurance?.tpa_name || 'N/A'}</span>
+                                </div>
+                                <div className="detail-item">
+                                  <span className="detail-label">Policy No</span>
+                                  <span className="detail-value">{insurance?.Policy_No || 'N/A'}</span>
+                                </div>
+                                <div className="detail-item">
+                                  <span className="detail-label">IGL Number</span>
+                                  <span className="detail-value">{insurance?.IGL_number || 'N/A'}</span>
+                                </div>
+                                <div className="detail-item">
+                                  <span className="detail-label">Admission Date</span>
+                                  <span className="detail-value">{formatDate(admission?.admission_date)}</span>
+                                </div>
+                                <div className="detail-item">
+                                  <span className="detail-label">Operation Time</span>
+                                  <span className="detail-value">{formatTime(admission?.operation_time)}</span>
+                                </div>
+                                <div className="detail-item">
+                                  <span className="detail-label">Ward</span>
+                                  <span className="detail-value">{bed?.select_ward?.ward_name || 'N/A'}</span>
+                                </div>
+                                <div className="detail-item">
+                                  <span className="detail-label">Admitted By</span>
+                                  <span className="detail-value">
+                                    {patient.user_created?.first_name} {patient.user_created?.last_name || 'N/A'}
+                                  </span>
+                                </div>
+                                <div className="detail-item">
+                                  <span className="detail-label">Created</span>
+                                  <span className="detail-value">{formatDate(patient.date_created)}</span>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
                     );
                   })
                 )}

@@ -548,7 +548,7 @@ function PatientDisplayPage() {
   const tabs = [
     { key: 'overview', label: 'Overview' },
     { key: 'admission', label: 'Admission', hidden: isStaffView },
-    { key: 'insurance', label: 'Insurance', hidden: isStaffView || !admission },
+    { key: 'insurance', label: 'Insurance', hidden: !admission },
     { key: 'add-ons', label: 'Add-on Procedures' },
     { key: 'referrals', label: 'Referrals' }
   ].filter((tab) => !tab.hidden);
@@ -769,16 +769,16 @@ function PatientDisplayPage() {
           </DetailSection>
         )}
 
-        {activeTab === 'insurance' && !isStaffView && admission && (
+        {activeTab === 'insurance' && admission && (
           <DetailSection
             title="Insurance Details"
             subtitle="Full insurance record"
             isEditing={editingSection === 'insurance'}
             onEdit={() => setEditingSection(editingSection === 'insurance' ? null : 'insurance')}
-            showEdit={Boolean(insurance)}
+            showEdit={Boolean(insurance) && canManageClinical}
           >
             {insurance ? (
-              editingSection === 'insurance' ? (
+              editingSection === 'insurance' && canManageClinical ? (
                 <InsuranceForm
                   patientId={patient.id}
                   initialData={insuranceInitialData}
@@ -829,7 +829,7 @@ function PatientDisplayPage() {
                 </>
               )
             ) : requiresInsurance ? (
-              showCreateInsurance ? (
+              showCreateInsurance && canManageClinical ? (
                 <InsuranceForm
                   patientId={patient.id}
                   onSubmit={handleCreateInsurance}

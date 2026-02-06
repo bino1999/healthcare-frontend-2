@@ -1,5 +1,5 @@
 // src/pages/AdminDashboard.jsx
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { initAuth } from '../api/auth';
 import { assignBedToPatient, getPatients, updateAdmissionRecord, updatePatientInsurance } from '../api/patients';
@@ -35,6 +35,7 @@ function AdminDashboard() {
   const [iglError, setIglError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [operationDateFilter, setOperationDateFilter] = useState('');
+  const [expandedRows, setExpandedRows] = useState(new Set());
 
   useEffect(() => {
     const initialize = async () => {
@@ -94,10 +95,29 @@ function AdminDashboard() {
     setStatusError('');
     try {
       await updateAdmissionRecord(selectedAdmission.id, { status: newStatus });
+      
+      // Optimistic update - update local state without full refetch
+      setPatients(prevPatients => 
+        prevPatients.map(patient => {
+          if (patient.id === selectedStatusPatient.id) {
+            const updatedAdmissions = Array.isArray(patient.patient_Admission)
+              ? patient.patient_Admission.map(adm => 
+                  adm.id === selectedAdmission.id 
+                    ? { ...adm, status: newStatus }
+                    : adm
+                )
+              : patient.patient_Admission?.id === selectedAdmission.id
+                ? { ...patient.patient_Admission, status: newStatus }
+                : patient.patient_Admission;
+            return { ...patient, patient_Admission: updatedAdmissions };
+          }
+          return patient;
+        })
+      );
+      
       setStatusModalOpen(false);
       setSelectedAdmission(null);
       setSelectedStatusPatient(null);
-      await fetchPatients();
     } catch (err) {
       setStatusError(err.message || 'Failed to update admission status');
     } finally {
@@ -119,10 +139,29 @@ function AdminDashboard() {
     setIglError('');
     try {
       await updatePatientInsurance(selectedInsurance.id, { IGL_status: newStatus });
+      
+      // Optimistic update - update local state without full refetch
+      setPatients(prevPatients => 
+        prevPatients.map(patient => {
+          if (patient.id === selectedIglPatient.id) {
+            const updatedInsurance = Array.isArray(patient.insurance)
+              ? patient.insurance.map(ins => 
+                  ins.id === selectedInsurance.id 
+                    ? { ...ins, IGL_status: newStatus }
+                    : ins
+                )
+              : patient.insurance?.id === selectedInsurance.id
+                ? { ...patient.insurance, IGL_status: newStatus }
+                : patient.insurance;
+            return { ...patient, insurance: updatedInsurance };
+          }
+          return patient;
+        })
+      );
+      
       setIglModalOpen(false);
       setSelectedInsurance(null);
       setSelectedIglPatient(null);
-      await fetchPatients();
     } catch (err) {
       setIglError(err.message || 'Failed to update IGL status');
     } finally {
@@ -136,9 +175,27 @@ function AdminDashboard() {
     setAssignError('');
     try {
       await assignBedToPatient(selectedPatient.id, bed.id);
+      
+      // Optimistic update - update local state without full refetch
+      setPatients(prevPatients => 
+        prevPatients.map(patient => {
+          if (patient.id === selectedPatient.id) {
+            return { 
+              ...patient, 
+              patient_bed: {
+                id: bed.id,
+                bed_no: bed.bed_no,
+                Status: 'Booking',
+                select_ward: bed.select_ward
+              }
+            };
+          }
+          return patient;
+        })
+      );
+      
       setAssignModalOpen(false);
       setSelectedPatient(null);
-      await fetchPatients();
     } catch (err) {
       setAssignError(err.message || 'Failed to assign bed');
     } finally {
@@ -338,27 +395,26 @@ function AdminDashboard() {
           <div className="loading">Loading patients...</div>
         ) : (
           <div className="table-container dashboard-table-container">
+            <div className="table-info">
+              <span>Showing {filteredPatients.length} patient{filteredPatients.length !== 1 ? 's' : ''}</span>
+            </div>
             <table className="data-table dashboard-table">
               <thead>
                 <tr>
-                  <th>MRN</th>
+                  <th className="th-expand"></th>
                   <th className="sticky-col">Patient Name</th>
-                  <th>Bed No</th>
-                  <th>Bed Status</th>
-                  <th>Status</th>
-                  <th>Insurance Company</th>
+                  <th>MRN</th>
+                  <th>Bed</th>
+                  <th>Admission Status</th>
                   <th>IGL Status</th>
-                  <th>Admission Date</th>
                   <th>Operation Date</th>
-                  <th>Operation Time</th>
-                  <th>Admitted By</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredPatients.length === 0 ? (
                   <tr>
-                    <td colSpan="12" className="text-center">
+                    <td colSpan="8" className="text-center">
                       No patients found.
                     </td>
                   </tr>
@@ -368,73 +424,130 @@ function AdminDashboard() {
                     const insurance = getInsurance(patient.insurance);
                     const bed = getBed(patient.patient_bed);
                     const canAssignBed = admission?.status === 'Admission Pending';
+                    const isExpanded = expandedRows.has(patient.id);
 
                     return (
-                      <tr key={patient.id}>
-                        <td>{patient.mrn}</td>
-                        <td className="sticky-col">
-                          <span className="truncate" title={patient.patient_name}>
-                            <strong>{patient.patient_name}</strong>
-                          </span>
-                        </td>
-                        <td>
-                          <button
-                            type="button"
-                            onClick={() => handleOpenAssign(patient)}
-                            disabled={!canAssignBed || assigning}
-                            className={`table-link-button${canAssignBed ? '' : ' disabled'}`}
-                            title={
-                              canAssignBed
-                                ? 'Assign bed'
-                                : 'Admission must be Pending to assign a bed'
-                            }
-                          >
-                            {bed?.bed_no || 'Assign Bed'}
-                          </button>
-                        </td>
-                        <td>{bed?.Status || 'Unassigned'}</td>
-                        <td>
-                          <button
-                            type="button"
-                            className="status-button"
-                            onClick={() => handleOpenStatus(patient, admission)}
-                            disabled={!admission?.id || statusUpdating}
-                            title={admission?.id ? 'Update admission status' : 'No admission record'}
-                          >
-                            <span className={`status-badge status-${admission?.status || 'unknown'}`}>
-                              {admission?.status || 'N/A'}
+                      <React.Fragment key={patient.id}>
+                        <tr className={isExpanded ? 'row-expanded' : ''}>
+                          <td className="td-expand">
+                            <button
+                              type="button"
+                              className="expand-btn"
+                              onClick={() => {
+                                const newExpanded = new Set(expandedRows);
+                                if (isExpanded) {
+                                  newExpanded.delete(patient.id);
+                                } else {
+                                  newExpanded.add(patient.id);
+                                }
+                                setExpandedRows(newExpanded);
+                              }}
+                              title={isExpanded ? 'Collapse' : 'Expand'}
+                            >
+                              {isExpanded ? '▼' : '▶'}
+                            </button>
+                          </td>
+                          <td className="sticky-col">
+                            <span className="patient-name" title={patient.patient_name}>
+                              <strong>{patient.patient_name}</strong>
                             </span>
-                          </button>
-                        </td>
-                        <td>{insurance?.tpa_name || 'N/A'}</td>
-                        <td>
-                          <button
-                            type="button"
-                            className="status-button"
-                            onClick={() => handleOpenIglStatus(patient, insurance)}
-                            disabled={!insurance?.id || iglUpdating}
-                            title={insurance?.id ? 'Update IGL status' : 'No insurance record'}
-                          >
-                            <span className={`igl-status ${insurance?.IGL_status || ''}`}>
-                              {insurance?.IGL_status || 'N/A'}
-                            </span>
-                          </button>
-                        </td>
-                        <td>{formatDate(admission?.admission_date)}</td>
-                        <td>{formatDate(admission?.operation_date)}</td>
-                        <td>{formatTime(admission?.operation_time)}</td>
-                        <td>
-                          {patient.user_created?.first_name} {patient.user_created?.last_name}
-                        </td>
-                        <td className="actions">
-                          <button 
-                            onClick={() => navigate(`/patients/view/${patient.id}`)}
-                            className="btn-view"
-                          >
-                            View
-                          </button>
-                        </td>
-                      </tr>
+                          </td>
+                          <td className="td-mrn">{patient.mrn}</td>
+                          <td>
+                            <div className="bed-cell">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenAssign(patient)}
+                                disabled={!canAssignBed || assigning}
+                                className={`bed-link${canAssignBed ? '' : ' disabled'}`}
+                                title={canAssignBed ? 'Assign bed' : 'Admission must be Pending'}
+                              >
+                                {bed?.bed_no || 'Assign'}
+                              </button>
+                              {bed?.Status && (
+                                <span className={`bed-status-tag ${bed.Status.toLowerCase()}`}>
+                                  {bed.Status}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td>
+                            <button
+                              type="button"
+                              className="status-button"
+                              onClick={() => handleOpenStatus(patient, admission)}
+                              disabled={!admission?.id || statusUpdating}
+                            >
+                              <span className={`status-badge status-${(admission?.status || 'unknown').replace(/\s+/g, '-')}`}>
+                                {admission?.status || 'N/A'}
+                              </span>
+                            </button>
+                          </td>
+                          <td>
+                            <button
+                              type="button"
+                              className="status-button"
+                              onClick={() => handleOpenIglStatus(patient, insurance)}
+                              disabled={!insurance?.id || iglUpdating}
+                            >
+                              <span className={`igl-badge ${(insurance?.IGL_status || '').toLowerCase().replace(/\s+/g, '-')}`}>
+                                {insurance?.IGL_status || 'N/A'}
+                              </span>
+                            </button>
+                          </td>
+                          <td className="td-date">{formatDate(admission?.operation_date)}</td>
+                          <td className="actions">
+                            <button 
+                              onClick={() => navigate(`/patients/view/${patient.id}`)}
+                              className="btn-view"
+                            >
+                              View
+                            </button>
+                          </td>
+                        </tr>
+                        {isExpanded && (
+                          <tr className="expanded-details-row">
+                            <td colSpan="8">
+                              <div className="expanded-details">
+                                <div className="detail-item">
+                                  <span className="detail-label">Insurance</span>
+                                  <span className="detail-value">{insurance?.tpa_name || 'N/A'}</span>
+                                </div>
+                                <div className="detail-item">
+                                  <span className="detail-label">Policy No</span>
+                                  <span className="detail-value">{insurance?.Policy_No || 'N/A'}</span>
+                                </div>
+                                <div className="detail-item">
+                                  <span className="detail-label">IGL Number</span>
+                                  <span className="detail-value">{insurance?.IGL_number || 'N/A'}</span>
+                                </div>
+                                <div className="detail-item">
+                                  <span className="detail-label">Admission Date</span>
+                                  <span className="detail-value">{formatDate(admission?.admission_date)}</span>
+                                </div>
+                                <div className="detail-item">
+                                  <span className="detail-label">Operation Time</span>
+                                  <span className="detail-value">{formatTime(admission?.operation_time)}</span>
+                                </div>
+                                <div className="detail-item">
+                                  <span className="detail-label">Ward</span>
+                                  <span className="detail-value">{bed?.select_ward?.ward_name || 'N/A'}</span>
+                                </div>
+                                <div className="detail-item">
+                                  <span className="detail-label">Admitted By</span>
+                                  <span className="detail-value">
+                                    {patient.user_created?.first_name} {patient.user_created?.last_name || 'N/A'}
+                                  </span>
+                                </div>
+                                <div className="detail-item">
+                                  <span className="detail-label">Created</span>
+                                  <span className="detail-value">{formatDate(patient.date_created)}</span>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
                     );
                   })
                 )}
