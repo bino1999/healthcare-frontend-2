@@ -35,6 +35,7 @@ function StaffDashboard() {
   const [iglUpdating, setIglUpdating] = useState(false);
   const [iglError, setIglError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [operationDateFilter, setOperationDateFilter] = useState('');
 
   useEffect(() => {
     const initialize = async () => {
@@ -105,28 +106,58 @@ function StaffDashboard() {
 
   const filteredPatients = useMemo(() => {
     return patients.filter((patient) => {
+      // Unified search - patient name, MRN, insurance company, bed no
       if (normalizedSearch) {
-        const searchTarget = `${patient.patient_name || ''} ${patient.mrn || ''}`.toLowerCase();
+        const insurance = getInsurance(patient.insurance);
+        const bed = getBed(patient.patient_bed);
+        const searchTarget = [
+          patient.patient_name || '',
+          patient.mrn || '',
+          insurance?.tpa_name || '',
+          insurance?.tpa_company || '',
+          bed?.bed_no || ''
+        ].join(' ').toLowerCase();
         if (!searchTarget.includes(normalizedSearch)) return false;
+      }
+
+      // Operation date filter
+      if (operationDateFilter) {
+        const admission = getLatestAdmission(patient.patient_Admission);
+        if (!admission?.operation_date) return false;
+        const opDate = admission.operation_date.split('T')[0];
+        if (opDate !== operationDateFilter) return false;
       }
 
       return true;
     });
-  }, [patients, normalizedSearch]);
+  }, [patients, normalizedSearch, operationDateFilter]);
 
   const iglChartData = useMemo(() => {
-    const counts = { Pending: 0, Approved: 0, Rejected: 0 };
+    const counts = { 
+      Pending: 0, 
+      Approved: 0, 
+      Rejected: 0, 
+      'Partial Approval': 0, 
+      'Under Review': 0, 
+      Cancelled: 0 
+    };
     filteredPatients.forEach((patient) => {
       const insurance = getInsurance(patient.insurance);
       const status = (insurance?.IGL_status || '').toLowerCase();
       if (status.includes('reject')) counts.Rejected += 1;
+      else if (status.includes('partial')) counts['Partial Approval'] += 1;
+      else if (status.includes('review')) counts['Under Review'] += 1;
+      else if (status.includes('cancel')) counts.Cancelled += 1;
       else if (status.includes('approve')) counts.Approved += 1;
       else counts.Pending += 1;
     });
     return [
       { name: 'Pending', value: counts.Pending },
       { name: 'Approved', value: counts.Approved },
-      { name: 'Rejected', value: counts.Rejected }
+      { name: 'Rejected', value: counts.Rejected },
+      { name: 'Partial Approval', value: counts['Partial Approval'] },
+      { name: 'Under Review', value: counts['Under Review'] },
+      { name: 'Cancelled', value: counts.Cancelled }
     ];
   }, [filteredPatients]);
 
@@ -264,14 +295,19 @@ function StaffDashboard() {
 
         {error && <div className="error-message">{error}</div>}
 
-        <FiltersBar searchTerm={searchTerm} onSearchChange={setSearchTerm} placeholder="Search by patient name" />
-
         <KpiCards items={kpiData} />
 
         <div className="dashboard-charts">
           <IglStatusPieChart data={iglChartData} />
           <AdmissionStatusPieChart data={admissionChartData} />
         </div>
+
+        <FiltersBar 
+          searchTerm={searchTerm} 
+          onSearchChange={setSearchTerm} 
+          operationDateFilter={operationDateFilter}
+          onOperationDateChange={setOperationDateFilter}
+        />
 
         {loading ? (
           <div className="loading">Loading patients...</div>

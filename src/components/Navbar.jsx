@@ -13,7 +13,7 @@ function Navbar({ user }) {
   return (
     <nav className="navbar">
       <div className="navbar-brand">
-        <h2>Healthcare Management</h2>
+        <h2>Hospital Operation Portal</h2>
       </div>
       
       <div className="navbar-menu">

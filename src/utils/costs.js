@@ -5,23 +5,8 @@ export const toNumber = (value) => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
-export const parseAccommodationRate = (typeOfAccommodation = '') => {
-  const match = String(typeOfAccommodation).match(/RM\s*([\d,]+(?:\.\d+)?)/i);
-  if (!match) return 0;
-  return toNumber(match[1]);
-};
-
-export const calculateTotalFee = (admission, procedures = []) => {
+// Total fee is simply the Estimated Cost (RM) from admission form - no calculations needed
+export const calculateTotalFee = (admission) => {
   if (!admission) return 0;
-  const estimatedCost = toNumber(admission.estimated_cost_RM);
-  const parsedDays = Number.parseInt(admission.expected_days_of_stay, 10);
-  const expectedDays = Number.isFinite(parsedDays) ? parsedDays : 0;
-  const accommodationFee =
-    parseAccommodationRate(admission.type_of_accommodation) * expectedDays;
-  const addOnTotal = (procedures || []).reduce(
-    (sum, procedure) => sum + toNumber(procedure?.estimated_cost),
-    0
-  );
-  const total = estimatedCost + accommodationFee + addOnTotal;
-  return Math.round(total * 100) / 100;
+  return toNumber(admission.estimated_cost_RM);
 };

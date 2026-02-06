@@ -221,8 +221,34 @@ export async function updateBedStatus(bedId, status) {
 // Assign bed to patient (Admin/Staff only)
 export async function assignBedToPatient(patientId, bedId) {
   try {
+    // 1. Get the patient's current bed (if any)
+    const currentPatient = await directus.request(
+      readItem('Patient', patientId, { fields: ['patient_bed'] })
+    );
+    
+    // 2. If patient has an existing bed, reset it to Vacant
+    if (currentPatient?.patient_bed) {
+      const oldBedId = typeof currentPatient.patient_bed === 'object' 
+        ? currentPatient.patient_bed.id 
+        : currentPatient.patient_bed;
+      
+      // Only reset if it's a different bed
+      if (oldBedId && oldBedId !== bedId) {
+        await directus.request(
+          updateItem('Bed', oldBedId, { Status: 'Vacant' })
+        );
+        console.log(`Previous bed ${oldBedId} reset to Vacant`);
+      }
+    }
+    
+    // 3. Assign new bed to patient
     const patient = await directus.request(
       updateItem('Patient', patientId, { patient_bed: bedId })
+    );
+    
+    // 4. Update new bed status to Booking
+    await directus.request(
+      updateItem('Bed', bedId, { Status: 'Booking' })
     );
     
     return patient;

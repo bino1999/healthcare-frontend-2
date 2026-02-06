@@ -381,9 +381,9 @@ function PatientDisplayPage() {
     ];
   }, [patient, insurance]);
 
-  const syncTotalFee = async (admissionData, procedures = addOnProcedures) => {
+  const syncTotalFee = async (admissionData) => {
     if (!admissionData) return;
-    const total_fee = calculateTotalFee(admissionData, procedures);
+    const total_fee = calculateTotalFee(admissionData);
     try {
       await updatePatient(id, { total_fee });
     } catch (err) {
@@ -445,7 +445,7 @@ function PatientDisplayPage() {
     try {
       const { Patient, ...payload } = formData;
       await updateAdmissionRecord(admission.id, payload);
-      await syncTotalFee(payload, addOnProcedures);
+      await syncTotalFee(payload);
       setEditingSection(null);
       refreshPatient();
     } catch (err) {
@@ -477,7 +477,7 @@ function PatientDisplayPage() {
     setError('');
     try {
       await directus.request(createItem('Admission', formData));
-      await syncTotalFee(formData, addOnProcedures);
+      await syncTotalFee(formData);
       setShowCreateAdmission(false);
       await refreshPatient();
     } catch (err) {
@@ -519,15 +519,7 @@ function PatientDisplayPage() {
     setSavingSection('create-add-on');
     setAddOnError('');
     try {
-      const createdProcedure = await createAddOnProcedure(formData);
-      const nextProcedures = [
-        ...addOnProcedures,
-        {
-          ...createdProcedure,
-          estimated_cost: createdProcedure?.estimated_cost ?? formData.estimated_cost
-        }
-      ];
-      await syncTotalFee(admission, nextProcedures);
+      await createAddOnProcedure(formData);
       setShowCreateAddOn(false);
       await refreshAddOnProcedures();
     } catch (err) {
@@ -620,7 +612,7 @@ function PatientDisplayPage() {
                   + Add-on Procedure
                 </button>
               )}
-              {canManageClinical && (
+              {/* {canManageClinical && (
                 <button
                   type="button"
                   className="btn-secondary"
@@ -629,7 +621,7 @@ function PatientDisplayPage() {
                 >
                   {aiAnalysisLoading ? 'Running Predictive Claims ...' : '+ Predictive Claims '}
                 </button>
-              )}
+              )} */}
             </div>
           }
         />
