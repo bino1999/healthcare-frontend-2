@@ -956,3 +956,12 @@ body {
   font-size: 0.82rem;
   color: #475569;
 }
+
+.td-insurance {
+  font-size: 0.82rem;
+  color: #475569;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

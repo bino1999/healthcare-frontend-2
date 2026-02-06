@@ -29,6 +29,7 @@ const directus = createDirectus(
   .with(
     authentication('json', {
       autoRefresh: true,
+      msRefreshBeforeExpires: 300000, // Refresh 5 minutes before expiry
       storage: authStorage
     })
   )
@@ -38,6 +39,38 @@ const directus = createDirectus(
 const savedToken = localStorage.getItem('directus_token');
 if (savedToken) {
   directus.setToken(savedToken);
+}
+
+// Periodic token refresh to prevent automatic logout
+let refreshInterval = null;
+
+export function startTokenRefreshTimer() {
+  if (refreshInterval) return;
+  
+  // Refresh token every 10 minutes
+  refreshInterval = setInterval(async () => {
+    const refreshToken = localStorage.getItem('directus_refresh_token');
+    if (!refreshToken) return;
+    
+    try {
+      const result = await directus.refresh();
+      if (result?.access_token) {
+        console.log('Token refreshed successfully');
+      }
+    } catch (error) {
+      console.warn('Token refresh failed:', error.message);
+    }
+  }, 10 * 60 * 1000); // 10 minutes
+  
+  console.log('Token refresh timer started');
+}
+
+export function stopTokenRefreshTimer() {
+  if (refreshInterval) {
+    clearInterval(refreshInterval);
+    refreshInterval = null;
+    console.log('Token refresh timer stopped');
+  }
 }
 
 export default directus;

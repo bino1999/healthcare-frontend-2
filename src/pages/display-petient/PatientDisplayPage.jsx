@@ -28,6 +28,7 @@ import PatientSummaryCard from './PatientSummaryCard';
 import { calculateTotalFee } from '../../utils/costs';
 import { analyzeClaimRisk } from '../../ai-analysis/analyzeClaimRisk';
 import AiAnalysisModal from '../../ai-analysis/AiAnalysisModal';
+import GeneratePafModal from '../GeneratePAF/GeneratePafModal';
 import './displayPatient.css';
 
 function PatientDisplayPage() {
@@ -46,6 +47,7 @@ function PatientDisplayPage() {
   const [aiAnalysisError, setAiAnalysisError] = useState('');
   const [aiAnalysisData, setAiAnalysisData] = useState(null);
   const [showAiModal, setShowAiModal] = useState(false);
+  const [showPafModal, setShowPafModal] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [patientSearch, setPatientSearch] = useState('');
   const [admissionSearch, setAdmissionSearch] = useState('');
@@ -612,6 +614,15 @@ function PatientDisplayPage() {
                   + Add-on Procedure
                 </button>
               )}
+              {admission && insurance && (
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setShowPafModal(true)}
+                >
+                  Generate PAF
+                </button>
+              )}
               {/* {canManageClinical && (
                 <button
                   type="button"
@@ -947,6 +958,15 @@ function PatientDisplayPage() {
           error={aiAnalysisError}
           analysisData={aiAnalysisData}
         />
+
+        {showPafModal && (
+          <GeneratePafModal
+            patient={patient}
+            admission={admission}
+            insurance={insurance}
+            onClose={() => setShowPafModal(false)}
+          />
+        )}
 
       </div>
     </div>

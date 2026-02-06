@@ -1,5 +1,5 @@
 // src/api/auth.js
-import directus from './directus';
+import directus, { startTokenRefreshTimer, stopTokenRefreshTimer } from './directus';
 import { readMe } from '@directus/sdk';
 
 const USER_FIELDS = ['id', 'email', 'first_name', 'last_name', 'role.id', 'role.name', 'avatar'];
@@ -14,6 +14,7 @@ export async function initAuth() {
 
     if (user) {
       localStorage.setItem('user', JSON.stringify(user));
+      startTokenRefreshTimer();
       return user;
     }
   } catch (error) {
@@ -35,6 +36,7 @@ export async function initAuth() {
         const user = await directus.request(readMe({ fields: USER_FIELDS }));
         if (user) {
           localStorage.setItem('user', JSON.stringify(user));
+          startTokenRefreshTimer();
           return user;
         }
       } catch (refreshError) {
@@ -68,6 +70,7 @@ export async function login(email, password) {
 
     // Cache user in localStorage
     localStorage.setItem('user', JSON.stringify(user));
+    startTokenRefreshTimer();
 
     return { success: true, user };
   } catch (error) {
@@ -77,6 +80,7 @@ export async function login(email, password) {
 
 // Logout user
 export async function logout() {
+  stopTokenRefreshTimer();
   try {
     await directus.logout();
   } catch (error) {

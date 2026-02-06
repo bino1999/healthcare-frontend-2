@@ -83,6 +83,11 @@ function StaffDashboard() {
     return new Date(dateString).toLocaleDateString();
   };
 
+  const formatTime = (timeString) => {
+    if (!timeString) return 'N/A';
+    return timeString;
+  };
+
   const getLatestAdmission = (admissions) => {
     if (!admissions || admissions.length === 0) return null;
     if (!Array.isArray(admissions)) return admissions;
@@ -379,6 +384,7 @@ function StaffDashboard() {
                   <th className="th-expand"></th>
                   <th className="sticky-col">Patient Name</th>
                   <th>MRN</th>
+                  <th>Insurance</th>
                   <th>Bed</th>
                   <th>Admission Status</th>
                   <th>IGL Status</th>
@@ -389,7 +395,7 @@ function StaffDashboard() {
               <tbody>
                 {filteredPatients.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="text-center">
+                    <td colSpan="9" className="text-center">
                       No patients found.
                     </td>
                   </tr>
@@ -428,6 +434,7 @@ function StaffDashboard() {
                             </span>
                           </td>
                           <td className="td-mrn">{patient.mrn}</td>
+                          <td className="td-insurance">{insurance?.tpa_name || 'N/A'}</td>
                           <td>
                             <div className="bed-cell">
                               <button
@@ -482,7 +489,7 @@ function StaffDashboard() {
                         </tr>
                         {isExpanded && (
                           <tr className="expanded-details-row">
-                            <td colSpan="8">
+                            <td colSpan="9">
                               <div className="expanded-details">
                                 <div className="detail-item">
                                   <span className="detail-label">Insurance</span>

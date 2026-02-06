@@ -251,6 +251,7 @@ function DoctorDashboard() {
                   <th className="th-expand"></th>
                   <th className="sticky-col">Patient Name</th>
                   <th>MRN</th>
+                  <th>Insurance</th>
                   <th>Bed</th>
                   <th>Admission Status</th>
                   <th>IGL Status</th>
@@ -261,7 +262,7 @@ function DoctorDashboard() {
               <tbody>
                 {filteredPatients.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="text-center">
+                    <td colSpan="9" className="text-center">
                       No patients found.
                     </td>
                   </tr>
@@ -299,6 +300,7 @@ function DoctorDashboard() {
                             </span>
                           </td>
                           <td className="td-mrn">{patient.mrn}</td>
+                          <td className="td-insurance">{insurance?.tpa_name || 'N/A'}</td>
                           <td>
                             <div className="bed-cell">
                               <span className="bed-link disabled">{bed?.bed_no || 'N/A'}</span>
@@ -331,7 +333,7 @@ function DoctorDashboard() {
                         </tr>
                         {isExpanded && (
                           <tr className="expanded-details-row">
-                            <td colSpan="8">
+                            <td colSpan="9">
                               <div className="expanded-details">
                                 <div className="detail-item">
                                   <span className="detail-label">Insurance</span>
