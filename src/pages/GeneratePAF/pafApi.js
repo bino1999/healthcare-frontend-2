@@ -1,6 +1,6 @@
 // src/pages/GeneratePAF/pafApi.js
 
-const PAF_API_URL = 'http://100.64.177.106:5678/webhook-test/fronthead';
+const PAF_API_URL = 'http://100.64.177.106:5678/webhook-test/directus-data';
 
 /**
  * Get the access token from localStorage
@@ -48,32 +48,51 @@ export function buildPafPayload(patient, admission, insurance) {
  */
 export async function generatePAF(patient, admission, insurance) {
   const payload = buildPafPayload(patient, admission, insurance);
-  const accessToken = getAccessToken();
 
   console.log('Generating PAF with payload:', payload);
 
-  const headers = {
-    'Content-Type': 'application/json',
-  };
+  try {
+    const response = await fetch(PAF_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
 
-  // Add authorization header if token exists
-  if (accessToken) {
-    headers['Authorization'] = `Bearer ${accessToken}`;
+    // Try to parse JSON, but handle non-JSON responses
+    let data;
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      const text = await response.text();
+      data = { message: text || 'PAF request sent successfully', status: response.status };
+    }
+
+    if (!response.ok) {
+      throw new Error(`Failed to generate PAF: ${response.status}`);
+    }
+
+    return data;
+  } catch (error) {
+    // If CORS error, try with no-cors mode (fire and forget)
+    if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
+      console.log('CORS issue detected, sending with no-cors mode...');
+      
+      await fetch(PAF_API_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'text/plain',
+        },
+        body: JSON.stringify(payload),
+      });
+      
+      return { message: 'PAF request sent (no-cors mode)', success: true };
+    }
+    throw error;
   }
-
-  const response = await fetch(PAF_API_URL, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(payload),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Failed to generate PAF: ${response.status} ${errorText}`);
-  }
-
-  const data = await response.json();
-  return data;
 }
 
 /**

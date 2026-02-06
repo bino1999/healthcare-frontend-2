@@ -71,6 +71,9 @@ export async function getPatient(id) {
           'user_created.last_name',
           'patient_bed.*',
           'patient_Admission.*',
+          'patient_Admission.user_created.id',
+          'patient_Admission.user_created.first_name',
+          'patient_Admission.user_created.last_name',
           'insurance.*',
           'Referral_Letter.*',
           'Add_on_Procedures.*'
