@@ -57,7 +57,7 @@ function PatientDisplayPage() {
   const {
     patient,
     loading,
-    error,
+    error: patientError,
     refresh: refreshPatient
   } = usePatient(id, Boolean(user));
   const {
@@ -74,6 +74,9 @@ function PatientDisplayPage() {
     refresh: refreshAddOnProcedures,
     setError: setAddOnError
   } = useAddOnProcedures(id, Boolean(user));
+
+  // Local page error state (separate from hook-provided errors)
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const initialize = async () => {
@@ -459,16 +462,24 @@ function PatientDisplayPage() {
 
   const handleInsuranceSubmit = async (formData) => {
     const insuranceId = insurance?.id || formData?.id;
-    if (!insuranceId) return;
+    console.log('handleInsuranceSubmit called', { formData, insuranceId });
+    if (!insuranceId) {
+      console.warn('No insuranceId found; aborting update', { insurance, formData });
+      setError('No insurance record found to update.');
+      return;
+    }
     setSavingSection('insurance');
-    setError('');
+    setError(''); // Clear any previous errors
     try {
       const { pation, ...payload } = formData;
+      console.log('Updating insurance', { insuranceId, payload });
       await updatePatientInsurance(insuranceId, payload);
+      console.log('Insurance update successful', { insuranceId });
       setEditingSection(null);
-      refreshPatient();
+      await refreshPatient();
     } catch (err) {
-      // error handled by hook
+      console.error('Insurance update failed', err);
+      setError(err.message || 'Failed to update insurance.'); // Set error message on failure
     } finally {
       setSavingSection(null);
     }
@@ -637,7 +648,7 @@ function PatientDisplayPage() {
           }
         />
 
-        {error && <div className="error-message">{error}</div>}
+        {(error || patientError) && <div className="error-message">{error || patientError}</div>}
 
         <PatientSummaryCard patient={patient} admission={admission} insurance={insurance} />
 

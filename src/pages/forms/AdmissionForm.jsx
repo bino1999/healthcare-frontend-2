@@ -148,6 +148,12 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
     if (admissionData.estimated_cost_RM === '' || admissionData.estimated_cost_RM === null) {
       newErrors.estimated_cost_RM = 'Estimated cost is required';
     }
+    if (admissionData.Surgery_Duration !== '' && admissionData.Surgery_Duration !== null && admissionData.Surgery_Duration !== undefined) {
+      const durationVal = Number(admissionData.Surgery_Duration);
+      if (!Number.isInteger(durationVal) || durationVal < 1) {
+        newErrors.Surgery_Duration = 'Surgery duration must be a positive whole number (in minutes)';
+      }
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -173,7 +179,7 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
         operation_date: admissionData.operation_date || null,
         operation_time: admissionData.operation_time || null,
         type_of_operation_or_procedure: admissionData.type_of_operation_or_procedure || null,
-        Surgery_Duration: admissionData.Surgery_Duration || null,
+        Surgery_Duration: admissionData.Surgery_Duration ? parseInt(admissionData.Surgery_Duration) : null,
         urgent_investigations: admissionData.urgent_investigations,
         need_to_add_others: admissionData.need_to_add_others || null,
         other_investigation: admissionData.other_investigation || null,
@@ -562,16 +568,19 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
         </div>
 
         <div style={styles.formGroup}>
-          <label style={styles.label}>Surgery Duration</label>
+          <label style={styles.label}>Surgery Duration (minutes)</label>
           <input
-            type="text"
+            type="number"
             name="Surgery_Duration"
             value={admissionData.Surgery_Duration}
             onChange={handleChange}
-            style={styles.input}
-            placeholder="e.g., 2 hours 30 minutes"
+            style={errors.Surgery_Duration ? styles.inputError : styles.input}
+            placeholder="e.g., 120"
+            min="1"
+            step="1"
             disabled={loading}
           />
+          {errors.Surgery_Duration && <span style={styles.errorMessage}>{errors.Surgery_Duration}</span>}
         </div>
 
         {/* Investigation and Procedures */}

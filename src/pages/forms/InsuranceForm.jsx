@@ -1,8 +1,11 @@
 // src/components/forms/InsuranceForm.jsx
 import { useEffect, useState } from 'react';
+import { getUser } from '../../utils/auth';
 
 
 function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initialData, submitLabel, cancelLabel, loadingLabel, skipLabel }) {
+  const currentUser = getUser();
+  const isDoctor = currentUser?.role?.name === 'Doctor';
   const normalizeDateInput = (dateValue) => {
     if (!dateValue) return '';
     const date = new Date(dateValue);
@@ -197,86 +200,106 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
     const newErrors = {};
     const isEditing = Boolean(initialData?.id);
 
-    if (!isEditing) {
-      if (!insuranceData.Policy_No.trim()) newErrors.Policy_No = 'Policy number is required';
-      if (!insuranceData.tpa_name) newErrors.tpa_name = 'TPA name is required';
-      if (!insuranceData.admission_reason) newErrors.admission_reason = 'Admission reason is required';
+    // Ensure Policy_No is validated properly
+    if (!insuranceData.Policy_No || !insuranceData.Policy_No.trim()) {
+      newErrors.Policy_No = 'Policy number is required';
+    }
+
+    // Ensure tpa_name is validated properly
+    if (!insuranceData.tpa_name) {
+      newErrors.tpa_name = 'TPA name is required';
+    }
+
+    // Ensure admission_reason is validated properly
+    if (!insuranceData.admission_reason) {
+      newErrors.admission_reason = 'Admission reason is required';
     }
 
     setErrors(newErrors);
+
+    // Debugging validation errors
+    console.log('Validation Errors:', newErrors);
+
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (validate()) {
-      const submissionData = {
-        id: initialData?.id,
-        pation: patientId,
-        Policy_No: insuranceData.Policy_No || null,
-        tpa_name: insuranceData.tpa_name || null,
-        IGL_number: insuranceData.IGL_number || null,
-        IGL_status: insuranceData.IGL_status || null,
-        estimated_cost: insuranceData.estimated_cost ? parseFloat(insuranceData.estimated_cost) : null,
-        expected_days_of_stay: insuranceData.expected_days_of_stay ? parseInt(insuranceData.expected_days_of_stay) : null,
-        admission_reason: insuranceData.admission_reason || null,
-        accident_date: insuranceData.accident_date || null,
-        accident_time: insuranceData.accident_time || null,
-        accident_details: insuranceData.accident_details || null,
-        illness_symptoms_first_appeared_on_date: insuranceData.illness_symptoms_first_appeared_on_date || null,
-        doctors_consulted_for_this_illness: insuranceData.doctors_consulted_for_this_illness || null,
-        doctors_or_clinic_contact: insuranceData.doctors_or_clinic_contact || null,
-        diagnosis: insuranceData.diagnosis || null,
-        how_long_is_person_aware_of_this_condition: insuranceData.how_long_is_person_aware_of_this_condition || null,
-        blood_pressure: insuranceData.blood_pressure || null,
-        temperature: insuranceData.temperature || null,
-        pulse: insuranceData.pulse || null,
-        date_first_consulted: insuranceData.date_first_consulted || null,
-        any_previous_consultaion: insuranceData.any_previous_consultaion || null,
-        details_of_previous_consultation: insuranceData.details_of_previous_consultation || null,
-        was_this_patient_referred: insuranceData.was_this_patient_referred || null,
-        patient_referred_details: insuranceData.patient_referred_details || null,
-        condition_exist_before: insuranceData.condition_exist_before || null,
-        date: insuranceData.date || null,
-        disease_or_disorder: insuranceData.disease_or_disorder || null,
-        treatment_or_hospitalization_details: insuranceData.treatment_or_hospitalization_details || null,
-        doctor_or_hospital_or_clinic: insuranceData.doctor_or_hospital_or_clinic || null,
-        more: insuranceData.more,
-        date1: insuranceData.date1 || null,
-        treatment_or_hospitalization_details1: insuranceData.treatment_or_hospitalization_details1 || null,
-        disease_or_disorder1: insuranceData.disease_or_disorder1 || null,
-        doctor_or_hospital_or_clinic1: insuranceData.doctor_or_hospital_or_clinic1 || null,
-        date2: insuranceData.date2 || null,
-        treatment_or_hospitalization_details2: insuranceData.treatment_or_hospitalization_details2 || null,
-        disease_or_disorder2: insuranceData.disease_or_disorder2 || null,
-        doctor_or_hospital_or_clinic2: insuranceData.doctor_or_hospital_or_clinic2 || null,
-        diagnosis_information: insuranceData.diagnosis_information || null,
-        provisional_diagnosis: insuranceData.provisional_diagnosis || null,
-        diagnosis_confirmed: insuranceData.diagnosis_confirmed || null,
-        advised_patient: insuranceData.advised_patient || null,
-        cause_and_pathology: insuranceData.cause_and_pathology || null,
-        any_possibility_of_relapse: insuranceData.any_possibility_of_relapse || null,
-        admitting_diagnosis: insuranceData.admitting_diagnosis || null,
-        admitting_diagnosis_confirmed: insuranceData.admitting_diagnosis_confirmed || null,
-        admitting_diagnosis_advised_patien: insuranceData.admitting_diagnosis_advised_patien || null,
-        admitting_diagnosis_cause_and_pathology: insuranceData.admitting_diagnosis_cause_and_pathology || null,
-        admitting_diagnosisany_possibility_of_relapse: insuranceData.admitting_diagnosisany_possibility_of_relapse || null,
-        condition_be_managed: insuranceData.condition_be_managed || null,
-        reason_for_admission: insuranceData.reason_for_admission || null,
-        condition_related_to: insuranceData.condition_related_to,
-        need_to_add_others: insuranceData.need_to_add_others || null,
-        others: insuranceData.others || null,
-        type_of_operation_procedures: insuranceData.type_of_operation_procedures || null,
-        need_to_add_others_copy: insuranceData.need_to_add_others_copy || null,
-        Condition_1: insuranceData.Condition_1 || null,
-        Condition_2: insuranceData.Condition_2 || null,
-        since: insuranceData.since || null,
-        since_copy: insuranceData.since_copy || null,
-        pregnant_information: insuranceData.pregnant_information || null,
-        pregnancy_duration: insuranceData.pregnancy_duration || null
-      };
-      onSubmit(submissionData);
+
+    // Ensure validation is called and respected
+    if (!validate()) {
+      console.log('Validation failed. Submission halted.');
+      return;
     }
+
+    const submissionData = {
+      id: initialData?.id || null, // Include the insurance ID if available
+      pation: patientId,
+      Policy_No: insuranceData.Policy_No || null,
+      tpa_name: insuranceData.tpa_name || null,
+      IGL_number: insuranceData.IGL_number || null,
+      IGL_status: insuranceData.IGL_status || null,
+      estimated_cost: insuranceData.estimated_cost ? parseFloat(insuranceData.estimated_cost) : null,
+      expected_days_of_stay: insuranceData.expected_days_of_stay ? parseInt(insuranceData.expected_days_of_stay) : null,
+      admission_reason: insuranceData.admission_reason || null,
+      accident_date: insuranceData.accident_date || null,
+      accident_time: insuranceData.accident_time || null,
+      accident_details: insuranceData.accident_details || null,
+      illness_symptoms_first_appeared_on_date: insuranceData.illness_symptoms_first_appeared_on_date || null,
+      doctors_consulted_for_this_illness: insuranceData.doctors_consulted_for_this_illness || null,
+      doctors_or_clinic_contact: insuranceData.doctors_or_clinic_contact || null,
+      diagnosis: insuranceData.diagnosis || null,
+      how_long_is_person_aware_of_this_condition: insuranceData.how_long_is_person_aware_of_this_condition || null,
+      blood_pressure: insuranceData.blood_pressure || null,
+      temperature: insuranceData.temperature || null,
+      pulse: insuranceData.pulse || null,
+      date_first_consulted: insuranceData.date_first_consulted || null,
+      any_previous_consultaion: insuranceData.any_previous_consultaion || null,
+      details_of_previous_consultation: insuranceData.details_of_previous_consultation || null,
+      was_this_patient_referred: insuranceData.was_this_patient_referred || null,
+      patient_referred_details: insuranceData.patient_referred_details || null,
+      condition_exist_before: insuranceData.condition_exist_before || null,
+      date: insuranceData.date || null,
+      disease_or_disorder: insuranceData.disease_or_disorder || null,
+      treatment_or_hospitalization_details: insuranceData.treatment_or_hospitalization_details || null,
+      doctor_or_hospital_or_clinic: insuranceData.doctor_or_hospital_or_clinic || null,
+      more: insuranceData.more,
+      date1: insuranceData.date1 || null,
+      treatment_or_hospitalization_details1: insuranceData.treatment_or_hospitalization_details1 || null,
+      disease_or_disorder1: insuranceData.disease_or_disorder1 || null,
+      doctor_or_hospital_or_clinic1: insuranceData.doctor_or_hospital_or_clinic1 || null,
+      date2: insuranceData.date2 || null,
+      treatment_or_hospitalization_details2: insuranceData.treatment_or_hospitalization_details2 || null,
+      disease_or_disorder2: insuranceData.disease_or_disorder2 || null,
+      doctor_or_hospital_or_clinic2: insuranceData.doctor_or_hospital_or_clinic2 || null,
+      diagnosis_information: insuranceData.diagnosis_information || null,
+      provisional_diagnosis: insuranceData.provisional_diagnosis || null,
+      diagnosis_confirmed: insuranceData.diagnosis_confirmed || null,
+      advised_patient: insuranceData.advised_patient || null,
+      cause_and_pathology: insuranceData.cause_and_pathology || null,
+      any_possibility_of_relapse: insuranceData.any_possibility_of_relapse || null,
+      admitting_diagnosis: insuranceData.admitting_diagnosis || null,
+      admitting_diagnosis_confirmed: insuranceData.admitting_diagnosis_confirmed || null,
+      admitting_diagnosis_advised_patien: insuranceData.admitting_diagnosis_advised_patien || null,
+      admitting_diagnosis_cause_and_pathology: insuranceData.admitting_diagnosis_cause_and_pathology || null,
+      admitting_diagnosisany_possibility_of_relapse: insuranceData.admitting_diagnosisany_possibility_of_relapse || null,
+      condition_be_managed: insuranceData.condition_be_managed || null,
+      reason_for_admission: insuranceData.reason_for_admission || null,
+      condition_related_to: insuranceData.condition_related_to,
+      need_to_add_others: insuranceData.need_to_add_others || null,
+      others: insuranceData.others || null,
+      type_of_operation_procedures: insuranceData.type_of_operation_procedures || null,
+      need_to_add_others_copy: insuranceData.need_to_add_others_copy || null,
+      Condition_1: insuranceData.Condition_1 || null,
+      Condition_2: insuranceData.Condition_2 || null,
+      since: insuranceData.since || null,
+      since_copy: insuranceData.since_copy || null,
+      pregnant_information: insuranceData.pregnant_information || null,
+      pregnancy_duration: insuranceData.pregnancy_duration || null
+    };
+
+    console.log('InsuranceForm submissionData:', submissionData);
+    onSubmit(submissionData);
   };
 
   const styles = {
@@ -512,39 +535,41 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
           </div>
         </div>
 
-        <div style={styles.formRow}>
-          <div style={styles.formGroup}>
-            <label style={styles.label}>IGL Number</label>
-            <input
-              type="text"
-              name="IGL_number"
-              value={insuranceData.IGL_number}
-              onChange={handleChange}
-              style={styles.input}
-              placeholder="Enter IGL number"
-              disabled={loading}
-            />
-          </div>
+        {!isDoctor && (
+          <div style={styles.formRow}>
+            <div style={styles.formGroup}>
+              <label style={styles.label}>IGL Number</label>
+              <input
+                type="text"
+                name="IGL_number"
+                value={insuranceData.IGL_number}
+                onChange={handleChange}
+                style={styles.input}
+                placeholder="Enter IGL number"
+                disabled={loading}
+              />
+            </div>
 
-          <div style={styles.formGroup}>
-            <label style={styles.label}>IGL Status</label>
-            <select
-              name="IGL_status"
-              value={insuranceData.IGL_status}
-              onChange={handleChange}
-              style={styles.select}
-              disabled={loading}
-            >
-              <option value="">Select IGL Status</option>
-              <option value="pending">Pending</option>
-              <option value="Approved">Approved</option>
-              <option value="Rejected">Rejected</option>
-              <option value="Deferment">Deferment</option>
-              <option value="Not Found">Not Found</option>
-              <option value="Error">Error</option>
-            </select>
+            <div style={styles.formGroup}>
+              <label style={styles.label}>IGL Status</label>
+              <select
+                name="IGL_status"
+                value={insuranceData.IGL_status}
+                onChange={handleChange}
+                style={styles.select}
+                disabled={loading}
+              >
+                <option value="">Select IGL Status</option>
+                <option value="pending">Pending</option>
+                <option value="Approved">Approved</option>
+                <option value="Rejected">Rejected</option>
+                <option value="Deferment">Deferment</option>
+                <option value="Not Found">Not Found</option>
+                <option value="Error">Error</option>
+              </select>
+            </div>
           </div>
-        </div>
+        )}
 
         <div style={styles.formRow}>
           <div style={styles.formGroup}>
