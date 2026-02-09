@@ -1,6 +1,7 @@
 // src/pages/GeneratePAF/pafApi.js
 
 const PAF_API_URL = 'http://100.64.177.106:5678/webhook-test/directus-data';
+const DIRECTUS_URL = import.meta.env.VITE_DIRECTUS_URL || 'http://100.64.177.106:8055';
 
 /**
  * Get the access token from localStorage
@@ -92,6 +93,103 @@ export async function generatePAF(patient, admission, insurance) {
       return { message: 'PAF request sent (no-cors mode)', success: true };
     }
     throw error;
+  }
+}
+
+/**
+ * Fetch the insurance record from Directus to check for pdf_url
+ * @param {string|number} insuranceId - The insurance record ID
+ * @returns {Promise<string|null>} The pdf_url value or null
+ */
+export async function fetchInsurancePdfUrl(insuranceId) {
+  const token = getAccessToken();
+
+  const response = await fetch(`${DIRECTUS_URL}/items/insurance/${insuranceId}?fields=pdf_url`, {
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch insurance record');
+  }
+
+  const data = await response.json();
+  return data?.data?.pdf_url || null;
+}
+
+/**
+ * Poll the insurance record until pdf_url appears or timeout
+ * @param {string|number} insuranceId - The insurance record ID
+ * @param {Object} options - Polling options
+ * @param {number} options.interval - Polling interval in ms (default: 3000)
+ * @param {number} options.timeout - Max wait time in ms (default: 90000)
+ * @param {function} options.onProgress - Called each poll attempt with { attempt, elapsed }
+ * @returns {Promise<string>} The pdf_url
+ */
+export async function pollForPdfUrl(insuranceId, { interval = 3000, timeout = 90000, onProgress } = {}) {
+  const startTime = Date.now();
+  let attempt = 0;
+
+  while (Date.now() - startTime < timeout) {
+    attempt++;
+    if (onProgress) {
+      const elapsed = Math.round((Date.now() - startTime) / 1000);
+      onProgress({ attempt, elapsed });
+    }
+
+    try {
+      const pdfUrl = await fetchInsurancePdfUrl(insuranceId);
+      if (pdfUrl) {
+        return pdfUrl;
+      }
+    } catch (err) {
+      console.warn(`Poll attempt ${attempt} failed:`, err.message);
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, interval));
+  }
+
+  throw new Error('PDF generation timed out. Please try again or check Directus.');
+}
+
+/**
+ * Download a PDF from a URL
+ * @param {string} pdfUrl - The PDF URL to download
+ * @param {string} filename - Optional filename
+ */
+export function downloadPdf(pdfUrl, filename) {
+  const link = document.createElement('a');
+  link.href = pdfUrl;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  if (filename) {
+    link.download = filename;
+  }
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+/**
+ * Clear the pdf_url field on the insurance record before generating
+ * so we can detect when the new one appears
+ * @param {string|number} insuranceId
+ */
+export async function clearInsurancePdfUrl(insuranceId) {
+  const token = getAccessToken();
+
+  const response = await fetch(`${DIRECTUS_URL}/items/insurance/${insuranceId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ pdf_url: null }),
+  });
+
+  if (!response.ok) {
+    console.warn('Could not clear pdf_url before generation');
   }
 }
 

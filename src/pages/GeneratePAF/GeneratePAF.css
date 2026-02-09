@@ -205,3 +205,32 @@
     transform: rotate(360deg);
   }
 }
+
+.paf-progress {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.paf-download-link {
+  background: none;
+  border: none;
+  color: #15803d;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  margin-top: 0.25rem;
+  text-decoration: underline;
+}
+
+.paf-download-link:hover {
+  color: #166534;
+}

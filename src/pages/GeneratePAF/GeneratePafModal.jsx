@@ -1,10 +1,11 @@
 // src/pages/GeneratePAF/GeneratePafModal.jsx
 import React from 'react';
 import { useGeneratePAF } from './useGeneratePAF';
+import { downloadPdf } from './pafApi';
 import './GeneratePAF.css';
 
 export default function GeneratePafModal({ patient, admission, insurance, onClose }) {
-  const { loading, error, success, response, generate, reset } = useGeneratePAF();
+  const { loading, error, success, phase, pollInfo, pdfUrl, generate, reset } = useGeneratePAF();
 
   // Build preview data
   const previewData = [
@@ -23,18 +24,49 @@ export default function GeneratePafModal({ patient, admission, insurance, onClos
   ];
 
   const handleGenerate = async () => {
-    const result = await generate(patient, admission, insurance);
-    if (result.success) {
-      // Optionally auto-close after success
-      setTimeout(() => {
-        onClose();
-      }, 2000);
-    }
+    await generate(patient, admission, insurance);
   };
 
   const handleClose = () => {
+    if (loading) return; // Prevent closing while generating
     reset();
     onClose();
+  };
+
+  const handleDownloadAgain = () => {
+    if (pdfUrl) {
+      const filename = `PAF_${patient?.mrn || patient?.patient_name || 'document'}.pdf`;
+      downloadPdf(pdfUrl, filename);
+    }
+  };
+
+  // Determine button label based on current phase
+  const getButtonLabel = () => {
+    switch (phase) {
+      case 'sending':
+        return (
+          <span className="paf-loading">
+            <span className="paf-spinner"></span>
+            Sending request...
+          </span>
+        );
+      case 'waiting':
+        return (
+          <span className="paf-loading">
+            <span className="paf-spinner"></span>
+            Generating PDF...
+          </span>
+        );
+      case 'downloading':
+        return (
+          <span className="paf-loading">
+            <span className="paf-spinner"></span>
+            Downloading...
+          </span>
+        );
+      default:
+        return 'Generate PAF';
+    }
   };
 
   return (
@@ -42,7 +74,7 @@ export default function GeneratePafModal({ patient, admission, insurance, onClos
       <div className="paf-modal" onClick={(e) => e.stopPropagation()}>
         <div className="paf-modal-header">
           <h3>Generate Pre-Authorization Form (PAF)</h3>
-          <button className="paf-modal-close" onClick={handleClose}>×</button>
+          <button className="paf-modal-close" onClick={handleClose} disabled={loading}>×</button>
         </div>
         
         <div className="paf-modal-body">
@@ -55,7 +87,25 @@ export default function GeneratePafModal({ patient, admission, insurance, onClos
           {success && (
             <div className="paf-success">
               <span className="paf-success-icon">✓</span>
-              PAF generated successfully!
+              <div>
+                <div>PAF generated successfully!</div>
+                {pdfUrl && (
+                  <button
+                    type="button"
+                    className="paf-download-link"
+                    onClick={handleDownloadAgain}
+                  >
+                    ⬇ Download
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {loading && pollInfo && (
+            <div className="paf-progress">
+              <span className="paf-spinner"></span>
+              <span>{pollInfo}</span>
             </div>
           )}
 
@@ -71,7 +121,7 @@ export default function GeneratePafModal({ patient, admission, insurance, onClos
         </div>
 
         <div className="paf-modal-footer">
-          <button className="paf-btn paf-btn-cancel" onClick={handleClose}>
+          <button className="paf-btn paf-btn-cancel" onClick={handleClose} disabled={loading}>
             {success ? 'Close' : 'Cancel'}
           </button>
           {!success && (
@@ -80,14 +130,7 @@ export default function GeneratePafModal({ patient, admission, insurance, onClos
               onClick={handleGenerate}
               disabled={loading}
             >
-              {loading ? (
-                <span className="paf-loading">
-                  <span className="paf-spinner"></span>
-                  Generating...
-                </span>
-              ) : (
-                'Generate PAF'
-              )}
+              {getButtonLabel()}
             </button>
           )}
         </div>
