@@ -96,7 +96,7 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
     type_of_operation_procedures: '',
     
     // Need to Add Others Copy
-    need_to_add_others_copy: '',
+    need_to_add_others_copy: 'No',
     
     // Other Conditions
     Condition_1: '',
@@ -1456,61 +1456,65 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
         </div>
 
         {/* ==================== OTHER CONDITIONS ==================== */}
-        <h3 style={styles.subTitle}>Other Conditions</h3>
-        
-        <div style={styles.formRow}>
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Condition 1</label>
-            <input
-              type="text"
-              name="Condition_1"
-              value={insuranceData.Condition_1}
-              onChange={handleChange}
-              style={styles.input}
-              placeholder="Enter condition 1"
-              disabled={loading}
-            />
-          </div>
+        {insuranceData.need_to_add_others_copy === 'Yes' && (
+          <>
+            <h3 style={styles.subTitle}>Other Conditions</h3>
+            
+            <div style={styles.formRow}>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Condition 1</label>
+                <input
+                  type="text"
+                  name="Condition_1"
+                  value={insuranceData.Condition_1}
+                  onChange={handleChange}
+                  style={styles.input}
+                  placeholder="Enter condition 1"
+                  disabled={loading}
+                />
+              </div>
 
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Since</label>
-            <input
-              type="date"
-              name="since"
-              value={insuranceData.since}
-              onChange={handleChange}
-              style={styles.input}
-              disabled={loading}
-            />
-          </div>
-        </div>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Since</label>
+                <input
+                  type="date"
+                  name="since"
+                  value={insuranceData.since}
+                  onChange={handleChange}
+                  style={styles.input}
+                  disabled={loading}
+                />
+              </div>
+            </div>
 
-        <div style={styles.formRow}>
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Condition 2</label>
-            <input
-              type="text"
-              name="Condition_2"
-              value={insuranceData.Condition_2}
-              onChange={handleChange}
-              style={styles.input}
-              placeholder="Enter condition 2"
-              disabled={loading}
-            />
-          </div>
+            <div style={styles.formRow}>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Condition 2</label>
+                <input
+                  type="text"
+                  name="Condition_2"
+                  value={insuranceData.Condition_2}
+                  onChange={handleChange}
+                  style={styles.input}
+                  placeholder="Enter condition 2"
+                  disabled={loading}
+                />
+              </div>
 
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Since (Copy)</label>
-            <input
-              type="date"
-              name="since_copy"
-              value={insuranceData.since_copy}
-              onChange={handleChange}
-              style={styles.input}
-              disabled={loading}
-            />
-          </div>
-        </div>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Since (Copy)</label>
+                <input
+                  type="date"
+                  name="since_copy"
+                  value={insuranceData.since_copy}
+                  onChange={handleChange}
+                  style={styles.input}
+                  disabled={loading}
+                />
+              </div>
+            </div>
+          </>
+        )}
 
         {/* ==================== PREGNANT INFORMATION ==================== */}
         <h3 style={styles.subTitle}>Pregnancy Information</h3>

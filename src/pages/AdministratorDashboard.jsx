@@ -206,12 +206,23 @@ function AdminDashboard() {
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString();
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'N/A';
+    return date.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
   };
 
   const formatTime = (timeString) => {
     if (!timeString) return 'N/A';
-    return timeString;
+    const [hours, minutes] = timeString.split(':');
+    if (!hours || !minutes) return timeString;
+    const hour = parseInt(hours, 10);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
   };
 
   // Helper function to get the latest admission
@@ -433,7 +444,7 @@ function AdminDashboard() {
                           <td className="td-expand">
                             <button
                               type="button"
-                              className="expand-btn"
+                              className={`expand-btn${isExpanded ? ' expanded' : ''}`}
                               onClick={() => {
                                 const newExpanded = new Set(expandedRows);
                                 if (isExpanded) {
@@ -536,7 +547,7 @@ function AdminDashboard() {
                                   <span className="detail-value">{bed?.select_ward?.ward_name || 'N/A'}</span>
                                 </div>
                                 <div className="detail-item">
-                                  <span className="detail-label">Admitted By</span>
+                                  <span className="detail-label">Doctor Name</span>
                                   <span className="detail-value">
                                     {patient.user_created?.first_name} {patient.user_created?.last_name || 'N/A'}
                                   </span>

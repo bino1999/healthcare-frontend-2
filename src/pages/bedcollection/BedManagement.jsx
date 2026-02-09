@@ -5,6 +5,7 @@ import { getHospitalWards } from '../../api/hospitalWard';
 import { createBed, deleteBed, getBeds, updateBed } from '../../api/bed';
 import BedKpiCards from '../dashboard-widgets/BedKpiCards';
 import BedForm from './BedForm';
+import './assignBedModal.css';
 
 function BedManagement({ embedded = false }) {
   const [user, setUser] = useState(null);
@@ -102,6 +103,14 @@ function BedManagement({ embedded = false }) {
     }
   };
 
+  const handleCloseModals = () => {
+    if (!saving) {
+      setShowForm(false);
+      setActiveBed(null);
+      setViewBed(null);
+    }
+  };
+
   const renderSection = () => (
     <div className={embedded ? '' : 'page-container'}>
       <div className="page-header">
@@ -117,47 +126,89 @@ function BedManagement({ embedded = false }) {
 
       {error && <div className="error-message">{error}</div>}
 
+      {/* Bed Form Modal */}
       {showForm && canManage && (
-        <BedForm
-          wards={wards}
-          initialData={activeBed}
-          onSubmit={handleSubmit}
-          onCancel={() => {
-            setShowForm(false);
-            setActiveBed(null);
-          }}
-          loading={saving}
-        />
+        <div className="modal-overlay" role="dialog" aria-modal="true">
+          <div className="modal-card" style={{ maxWidth: '700px' }}>
+            <div className="modal-header">
+              <div>
+                <h3>{activeBed ? 'Edit Bed' : 'Create New Bed'}</h3>
+                <p>{activeBed ? `Editing bed ${activeBed.bed_no}` : 'Add a new bed to the system'}</p>
+              </div>
+              <button 
+                className="modal-close" 
+                onClick={handleCloseModals} 
+                type="button"
+                disabled={saving}
+              >
+                ✕
+              </button>
+            </div>
+            <BedForm
+              wards={wards}
+              initialData={activeBed}
+              onSubmit={handleSubmit}
+              onCancel={handleCloseModals}
+              loading={saving}
+            />
+          </div>
+        </div>
       )}
 
+      {/* Bed View Modal */}
       {viewBed && (
-        <div className="detail-section" style={{ marginBottom: '24px' }}>
-          <div className="section-header">
-            <h3>Bed Details</h3>
-            <button className="btn-secondary" onClick={() => setViewBed(null)}>
-              Close
-            </button>
-          </div>
-          <div className="detail-grid">
-            <div className="detail-item">
-              <label>Bed Number</label>
-              <p>{viewBed.bed_no}</p>
+        <div className="modal-overlay" role="dialog" aria-modal="true">
+          <div className="modal-card" style={{ maxWidth: '500px' }}>
+            <div className="modal-header">
+              <div>
+                <h3>Bed Details</h3>
+                <p>Viewing bed <strong>{viewBed.bed_no}</strong></p>
+              </div>
+              <button className="modal-close" onClick={() => setViewBed(null)} type="button">
+                ✕
+              </button>
             </div>
-            <div className="detail-item">
-              <label>Status</label>
-              <p>{viewBed.Status || 'N/A'}</p>
+            <div className="bed-view-details">
+              <div className="bed-detail-row">
+                <span className="bed-detail-label">Bed Number</span>
+                <span className="bed-detail-value">{viewBed.bed_no}</span>
+              </div>
+              <div className="bed-detail-row">
+                <span className="bed-detail-label">Status</span>
+                <span className={`bed-status-tag ${(viewBed.Status || '').toLowerCase()}`}>
+                  {viewBed.Status || 'N/A'}
+                </span>
+              </div>
+              <div className="bed-detail-row">
+                <span className="bed-detail-label">Category</span>
+                <span className="bed-detail-value">{viewBed.Category || 'N/A'}</span>
+              </div>
+              <div className="bed-detail-row">
+                <span className="bed-detail-label">Ward</span>
+                <span className="bed-detail-value">{viewBed.select_ward?.ward_name || 'N/A'}</span>
+              </div>
+              <div className="bed-detail-row">
+                <span className="bed-detail-label">Assigned Patient</span>
+                <span className="bed-detail-value">
+                  {viewBed.Patient?.[0]?.patient_name || viewBed.Patient?.patient_name || 'Unassigned'}
+                </span>
+              </div>
             </div>
-            <div className="detail-item">
-              <label>Category</label>
-              <p>{viewBed.Category || 'N/A'}</p>
-            </div>
-            <div className="detail-item">
-              <label>Ward</label>
-              <p>{viewBed.select_ward?.ward_name || 'N/A'}</p>
-            </div>
-            <div className="detail-item">
-              <label>Assigned Patient</label>
-              <p>{viewBed.Patient?.patient_name || 'Unassigned'}</p>
+            <div className="modal-actions">
+              {canManage && (
+                <button 
+                  className="btn-primary" 
+                  onClick={() => {
+                    setViewBed(null);
+                    handleEdit(viewBed);
+                  }}
+                >
+                  Edit Bed
+                </button>
+              )}
+              <button className="btn-secondary" onClick={() => setViewBed(null)}>
+                Close
+              </button>
             </div>
           </div>
         </div>

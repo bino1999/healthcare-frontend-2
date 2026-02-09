@@ -145,6 +145,29 @@ export async function updatePatient(id, patientData) {
 // Delete patient
 export async function deletePatient(id) {
   try {
+    // First, get the patient to check if they have an assigned bed
+    const patient = await directus.request(
+      readItem('Patient', id, { fields: ['patient_bed'] })
+    );
+
+    // If patient has a bed, update bed status to vacant
+    if (patient?.patient_bed) {
+      const bedId = typeof patient.patient_bed === 'object' 
+        ? patient.patient_bed.id 
+        : patient.patient_bed;
+      
+      if (bedId) {
+        await directus.request(
+          updateItem('Bed', bedId, { 
+            Status: 'vacant',
+            Patient: null 
+          })
+        );
+        console.log(`Bed ${bedId} status changed to vacant after patient deletion`);
+      }
+    }
+
+    // Now delete the patient
     await directus.request(deleteItem('Patient', id));
     return true;
   } catch (error) {

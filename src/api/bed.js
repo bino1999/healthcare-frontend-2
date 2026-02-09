@@ -108,3 +108,56 @@ export async function deleteBed(id) {
     throw new Error('Failed to delete bed');
   }
 }
+
+// Check and update bed status to vacant if no patient assigned
+export async function syncBedStatus(bedId) {
+  try {
+    const bed = await directus.request(
+      readItem('Bed', bedId, { fields: ['*', 'Patient'] })
+    );
+
+    // If bed has no patient but status is not vacant, update to vacant
+    if (!bed.Patient && bed.Status !== 'vacant') {
+      await directus.request(
+        updateItem('Bed', bedId, { Status: 'vacant' })
+      );
+      console.log(`Bed ${bedId} status synced to vacant (no patient assigned)`);
+      return { ...bed, Status: 'vacant' };
+    }
+
+    return bed;
+  } catch (error) {
+    console.error('Sync bed status error:', error);
+    throw new Error('Failed to sync bed status');
+  }
+}
+
+// Check and update all beds - set vacant if no patient assigned
+export async function syncAllBedStatuses() {
+  try {
+    const beds = await directus.request(
+      readItems('Bed', {
+        fields: ['id', 'Status', 'Patient'],
+        limit: -1
+      })
+    );
+
+    const updatePromises = beds
+      .filter(bed => !bed.Patient && bed.Status !== 'vacant')
+      .map(bed => 
+        directus.request(
+          updateItem('Bed', bed.id, { Status: 'vacant' })
+        )
+      );
+
+    if (updatePromises.length > 0) {
+      await Promise.all(updatePromises);
+      console.log(`${updatePromises.length} bed(s) status synced to vacant`);
+    }
+
+    return { updated: updatePromises.length };
+  } catch (error) {
+    console.error('Sync all bed statuses error:', error);
+    throw new Error('Failed to sync bed statuses');
+  }
+}

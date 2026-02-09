@@ -49,6 +49,17 @@
   height: 36px;
   cursor: pointer;
   font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.modal-close:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .modal-table {
@@ -61,9 +72,50 @@
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+  margin-top: 8px;
 }
 
 .empty-state {
   color: #94a3b8;
   font-style: italic;
+}
+
+/* Bed View Modal Styles */
+.bed-view-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.bed-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.bed-detail-row:last-child {
+  border-bottom: none;
+}
+
+.bed-detail-row:nth-child(even) {
+  background: #fafbfc;
+}
+
+.bed-detail-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.bed-detail-value {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #1e293b;
 }
