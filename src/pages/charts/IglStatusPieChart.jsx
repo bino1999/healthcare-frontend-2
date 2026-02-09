@@ -20,7 +20,7 @@ function IglStatusPieChart({ data }) {
   return (
     <ChartCard
       title="IGL Status Overview"
-      subtitle="Distribution of all IGL statuses"
+      // subtitle="Distribution of all IGL statuses"
     >
       {total === 0 ? (
         <div className="chart-empty">No IGL data available.</div>

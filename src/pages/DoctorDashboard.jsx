@@ -175,20 +175,44 @@ function DoctorDashboard() {
   }, [filteredPatients]);
 
   const admissionChartData = useMemo(() => {
-    const counts = { Admitted: 0, Pending: 0, Discharge: 0 };
+    // Aggregate counts for all observed admission statuses
+    const counts = {};
     filteredPatients.forEach((patient) => {
       const admission = getLatestAdmission(patient.patient_Admission);
-      const status = (admission?.status || '').toLowerCase();
-      if (status.includes('admitted')) counts.Admitted += 1;
-      else if (status.includes('pending')) counts.Pending += 1;
-      else if (status.includes('discharge')) counts.Discharge += 1;
-      else counts.Pending += 1;
+      // Normalize status: ensure string, trim whitespace
+      const rawStatus = admission?.status;
+      const status = (typeof rawStatus === 'string' ? rawStatus.trim() : (rawStatus || 'Unknown'));
+      counts[status] = (counts[status] || 0) + 1;
     });
-    return [
-      { name: 'Admitted', value: counts.Admitted },
-      { name: 'Pending', value: counts.Pending },
-      { name: 'Discharge', value: counts.Discharge }
+
+    // DEBUG: log counts discovered for troubleshooting
+    console.debug('Admission status raw counts:', counts);
+
+    // Prefer a sensible display order for known statuses
+    const preferredOrder = [
+      'Admission Pending',
+      'Admitted',
+      'Discharge Pending',
+      'Today Discharged',
+      'KIV Discharged',
+      'Tomorrow Discharge'
     ];
+
+    const result = [];
+    preferredOrder.forEach((name) => {
+      if (counts[name]) {
+        result.push({ name, value: counts[name] });
+        delete counts[name];
+      }
+    });
+
+    // Append any other statuses not in the preferred order
+    Object.keys(counts).forEach((name) => {
+      result.push({ name, value: counts[name] });
+    });
+
+    console.debug('Admission chart data prepared:', result);
+    return result;
   }, [filteredPatients]);
 
   const kpiData = useMemo(() => {

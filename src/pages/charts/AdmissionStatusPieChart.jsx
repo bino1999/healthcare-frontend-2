@@ -1,16 +1,17 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import ChartCard from './ChartCard';
 
-const COLORS = ['#2563eb', '#f59e0b', '#0ea5e9'];
+function colorForIndex(i) {
+  // Generate visually distinct HSL colors
+  const hue = (i * 60) % 360; // 60-degree steps
+  return `hsl(${hue} 70% 45%)`;
+}
 
 function AdmissionStatusPieChart({ data }) {
   const total = data.reduce((sum, item) => sum + item.value, 0);
 
   return (
-    <ChartCard
-      title="Admission Status Overview"
-      subtitle="Admitted vs Pending vs Discharge"
-    >
+    <ChartCard title="Admission Status Overview">
       {total === 0 ? (
         <div className="chart-empty">No admission data available.</div>
       ) : (
@@ -27,11 +28,11 @@ function AdmissionStatusPieChart({ data }) {
               paddingAngle={3}
             >
               {data.map((entry, index) => (
-                <Cell key={`cell-${entry.name}`} fill={COLORS[index % COLORS.length]} />
+                <Cell key={`cell-${entry.name}`} fill={colorForIndex(index)} />
               ))}
             </Pie>
-            <Tooltip />
-            <Legend verticalAlign="bottom" height={36} />
+            <Tooltip formatter={(value) => `${value}`} />
+            <Legend verticalAlign="bottom" height={48} />
           </PieChart>
         </ResponsiveContainer>
       )}
