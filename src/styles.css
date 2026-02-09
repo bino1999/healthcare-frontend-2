@@ -1245,3 +1245,102 @@ body {
     font-size: 0.78rem;
   }
 }
+
+/* --- Table spacing & visual polish overrides (appended) --- */
+
+/* Container spacing */
+.table-container {
+  padding: 18px;
+}
+
+/* Head cells */
+.data-table th,
+.dashboard-table th {
+  padding: 0.9rem 1.25rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+}
+
+/* Body cells */
+.data-table td,
+.dashboard-table td {
+  padding: 0.85rem 1.25rem;
+  font-size: 0.95rem;
+  color: #334155;
+  vertical-align: middle;
+}
+
+/* Compact expand column */
+.th-expand,
+.td-expand {
+  width: 48px;
+  text-align: center;
+  padding: 0.55rem !important;
+}
+
+/* Actions cell */
+.data-table td.actions {
+  gap: 10px;
+  min-width: 200px;
+  padding-top: 0.6rem;
+  padding-bottom: 0.6rem;
+}
+
+.data-table td.actions button {
+  padding: 0.45rem 0.9rem;
+}
+
+/* Row hover subtle lift */
+.data-table tbody tr:hover {
+  background-color: #f8fafc;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+}
+
+/* Patient name spacing */
+.patient-name-cell {
+  gap: 0.75rem;
+  align-items: center;
+}
+
+/* Status / IGL badges */
+.status-badge,
+.igl-status {
+  padding: 0.35rem 0.6rem;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Sticky header visual refinement */
+.data-table thead {
+  box-shadow: inset 0 -1px 0 rgba(14, 165, 233, 0.06);
+}
+
+/* Responsive tweaks */
+@media (max-width: 1024px) {
+  .dashboard-table th,
+  .dashboard-table td {
+    padding: 0.6rem 0.9rem;
+    font-size: 0.82rem;
+  }
+
+  .data-table td.actions {
+    min-width: 160px;
+  }
+}
+
+@media (max-width: 480px) {
+  .data-table th,
+  .data-table td {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.8rem;
+  }
+
+  .table-container {
+    padding: 12px;
+  }
+}
