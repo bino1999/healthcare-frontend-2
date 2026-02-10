@@ -691,11 +691,20 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
           </div>
         </div>
 
-         <div style={styles.formGroup}>
+        <div style={styles.formGroup}>
           <label style={styles.label}>Sedation / Anesthesia Type</label>
-          <div style={styles.radioGroup}>
+          <div style={{ ...styles.radioGroup, flexDirection: 'column' }}>
             {sedationAnesthesiaOptions.map(option => (
-              <label key={option} style={styles.radioLabel}>
+              <label
+                key={option}
+                style={{
+                  ...styles.radioLabel,
+                  border: 'none',
+                  padding: '8px 0',
+                  minWidth: 0,
+                  background: 'transparent'
+                }}
+              >
                 <input
                   type="radio"
                   name="Sedation_and_Anesthesia"
