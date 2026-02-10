@@ -102,17 +102,6 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
     });
   }, [initialData]);
 
-  // Notify parent of changes so drafts persist between steps
-  useEffect(() => {
-    if (typeof onChange === 'function') {
-      try {
-        onChange(admissionData);
-      } catch (err) {
-        // ignore parent errors
-      }
-    }
-  }, [admissionData, onChange]);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setAdmissionData({
