@@ -108,10 +108,20 @@
   gap: 20px;
 }
 
+/* Ensure the left content can shrink/grow and allow the name to take available space */
+.summary-main > div:first-child {
+  flex: 1 1 auto;
+  min-width: 0; /* allow overflow-hidden children to work */
+}
+
 .patient-name {
   margin: 0;
-  font-size: 1.8rem;
+  /* Responsive font that shrinks on smaller screens to help long names fit */
+  font-size: clamp(1rem, 1rem + 1vw, 1.4rem);
   color: #0f172a;
+  white-space: nowrap;
+  overflow: visible; /* let the name expand instead of truncating */
+  text-overflow: clip;
 }
 
 .patient-meta {
@@ -123,14 +133,16 @@
 .summary-badges {
   display: flex;
   gap: 16px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  align-items: center;
+  flex: 0 0 auto;
 }
 
 .badge-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  min-width: 140px;
+  min-width: 90px;
 }
 
 .badge-label {

@@ -670,26 +670,7 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
           </div>
         </div>
 
-        <div style={styles.formGroup}>
-          <label style={styles.label}>Sedation / Anesthesia Type</label>
-          <div style={styles.radioGroup}>
-            {sedationAnesthesiaOptions.map(option => (
-              <label key={option} style={styles.radioLabel}>
-                <input
-                  type="radio"
-                  name="Sedation_and_Anesthesia"
-                  value={option}
-                  checked={admissionData.Sedation_and_Anesthesia === option}
-                  onChange={handleChange}
-                  style={styles.radio}
-                  disabled={loading}
-                />
-                {option}
-              </label>
-            ))}
-          </div>
-        </div>
-
+      
         <div style={styles.formGroup}>
           <label style={styles.label}>More Procedures Required?</label>
           <div style={styles.radioGroup}>
@@ -700,6 +681,26 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
                   name="need_to_add_more_procedures"
                   value={option}
                   checked={admissionData.need_to_add_more_procedures === option}
+                  onChange={handleChange}
+                  style={styles.radio}
+                  disabled={loading}
+                />
+                {option}
+              </label>
+            ))}
+          </div>
+        </div>
+
+         <div style={styles.formGroup}>
+          <label style={styles.label}>Sedation / Anesthesia Type</label>
+          <div style={styles.radioGroup}>
+            {sedationAnesthesiaOptions.map(option => (
+              <label key={option} style={styles.radioLabel}>
+                <input
+                  type="radio"
+                  name="Sedation_and_Anesthesia"
+                  value={option}
+                  checked={admissionData.Sedation_and_Anesthesia === option}
                   onChange={handleChange}
                   style={styles.radio}
                   disabled={loading}

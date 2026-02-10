@@ -714,12 +714,11 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
 
             <div style={styles.formGroup}>
               <label style={styles.label}>Doctors or Clinic Contact</label>
-              <input
-                type="text"
+              <textarea
                 name="doctors_or_clinic_contact"
                 value={insuranceData.doctors_or_clinic_contact}
                 onChange={handleChange}
-                style={styles.input}
+                style={styles.textarea}
                 placeholder="Enter contact information"
                 disabled={loading}
               />

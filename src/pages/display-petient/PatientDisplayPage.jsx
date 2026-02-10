@@ -560,7 +560,7 @@ function PatientDisplayPage() {
 
   const tabs = [
     { key: 'overview', label: 'Overview' },
-    { key: 'admission', label: 'Admission', hidden: isStaffView },
+    { key: 'admission', label: 'Admission', hidden: false },
     { key: 'insurance', label: 'Insurance', hidden: !admission },
     { key: 'add-ons', label: 'Add-on Procedures' },
     { key: 'referrals', label: 'Referrals' }
