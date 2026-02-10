@@ -139,9 +139,9 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
     if (!admissionData.admission_time) newErrors.admission_time = 'Admission time is required';
     if (!admissionData.financial_class) newErrors.financial_class = 'Financial class is required';
     if (!admissionData.diagnosis.trim()) newErrors.diagnosis = 'Diagnosis is required';
-    if (!admissionData.type_of_accommodation) {
-      newErrors.type_of_accommodation = 'Type of accommodation is required';
-    }
+    // if (!admissionData.type_of_accommodation) {
+    //   newErrors.type_of_accommodation = 'Type of accommodation is required';
+    // }
     if (!admissionData.expected_days_of_stay) {
       newErrors.expected_days_of_stay = 'Expected length of stay is required';
     }
@@ -150,8 +150,8 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
     }
     if (admissionData.Surgery_Duration !== '' && admissionData.Surgery_Duration !== null && admissionData.Surgery_Duration !== undefined) {
       const durationVal = Number(admissionData.Surgery_Duration);
-      if (!Number.isInteger(durationVal) || durationVal < 1) {
-        newErrors.Surgery_Duration = 'Surgery duration must be a positive whole number (in minutes)';
+      if (!Number.isFinite(durationVal) || durationVal <= 0) {
+        newErrors.Surgery_Duration = 'Surgery duration must be a positive number (minutes)';
       }
     }
     
@@ -179,7 +179,7 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
         operation_date: admissionData.operation_date || null,
         operation_time: admissionData.operation_time || null,
         type_of_operation_or_procedure: admissionData.type_of_operation_or_procedure || null,
-        Surgery_Duration: admissionData.Surgery_Duration ? parseInt(admissionData.Surgery_Duration) : null,
+        Surgery_Duration: admissionData.Surgery_Duration ? parseFloat(admissionData.Surgery_Duration) : null,
         urgent_investigations: admissionData.urgent_investigations,
         need_to_add_others: admissionData.need_to_add_others || null,
         other_investigation: admissionData.other_investigation || null,
@@ -568,16 +568,16 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
         </div>
 
         <div style={styles.formGroup}>
-          <label style={styles.label}>Surgery Duration (minutes)</label>
+          <label style={styles.label}>Surgery Duration (minutes, decimals allowed)</label>
           <input
             type="number"
             name="Surgery_Duration"
             value={admissionData.Surgery_Duration}
             onChange={handleChange}
             style={errors.Surgery_Duration ? styles.inputError : styles.input}
-            placeholder="e.g., 120"
-            min="1"
-            step="1"
+            placeholder="e.g., 120.5"
+            min="0.1"
+            step="0.1"
             disabled={loading}
           />
           {errors.Surgery_Duration && <span style={styles.errorMessage}>{errors.Surgery_Duration}</span>}

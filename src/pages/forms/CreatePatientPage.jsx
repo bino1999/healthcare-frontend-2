@@ -173,25 +173,46 @@ function CreatePatientPage() {
 
         {/* Step Indicator */}
         <div style={styles.stepIndicator}>
-          <div style={{
-            ...styles.step,
-            ...(activeStep === 1 ? styles.stepActive : {}),
-            ...(activeStep > 1 ? styles.stepCompleted : {})
-          }}>
+          <button
+            type="button"
+            onClick={() => setActiveStep(1)}
+            title="Go to Step 1"
+            style={{
+              ...styles.step,
+              ...(activeStep === 1 ? styles.stepActive : {}),
+              ...(activeStep > 1 ? styles.stepCompleted : {}),
+              cursor: 'pointer'
+            }}
+          >
             Step 1: Patient Info
-          </div>
-          <div style={{
-            ...styles.step,
-            ...(activeStep === 2 ? styles.stepActive : {}),
-            ...(activeStep > 2 ? styles.stepCompleted : {})
-          }}>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (!patientDraft) {
+                alert('Please complete Step 1 (Patient Info) first.');
+                setActiveStep(1);
+                return;
+              }
+              setActiveStep(2);
+            }}
+            title="Go to Step 2"
+            style={{
+              ...styles.step,
+              ...(activeStep === 2 ? styles.stepActive : {}),
+              ...(activeStep > 2 ? styles.stepCompleted : {}),
+              cursor: 'pointer'
+            }}
+          >
             Step 2: Admission (Required)
-          </div>
+          </button>
         </div>
 
         {/* Render appropriate form based on active step */}
         {activeStep === 1 && (
           <PatientForm
+            initialData={patientDraft}
             onSubmit={handlePatientSubmit}
             onCancel={handleCancel}
             loading={loading}

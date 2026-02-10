@@ -59,6 +59,60 @@ export async function getPatients(filters = {}) {
   }
 }
 
+// Get patients by name or MRN (server-filtered)
+export async function getPatientsByName(query, limit = 20) {
+  if (!query || !String(query).trim()) return [];
+  try {
+    const q = String(query).trim();
+    const patients = await directus.request(
+      readItems('Patient', {
+        fields: [
+          'id',
+          'patient_name',
+          'mrn',
+          'date_of_birth',
+          'NRIC',
+          'gender',
+          'contact_number',
+          'email',
+          'date_created',
+          'user_created.id',
+          'user_created.first_name',
+          'user_created.last_name',
+          'patient_bed.id',
+          'patient_bed.bed_no',
+          'patient_bed.Status',
+          'patient_bed.select_ward.id',
+          'patient_bed.select_ward.ward_name',
+          'patient_Admission.id',
+          'patient_Admission.status',
+          'patient_Admission.admission_date',
+          'patient_Admission.operation_date',
+          'patient_Admission.operation_time',
+          'insurance.id',
+          'insurance.tpa_name',
+          'insurance.IGL_status',
+          'insurance.Policy_No',
+          'insurance.IGL_number'
+        ],
+        filter: {
+          _or: [
+            { patient_name: { _icontains: q } },
+            { mrn: { _icontains: q } }
+          ]
+        },
+        limit,
+        sort: ['-date_created']
+      })
+    );
+
+    return patients;
+  } catch (error) {
+    console.error('Get patients by name error:', error);
+    throw new Error('Failed to fetch patients by name');
+  }
+}
+
 // Get single patient WITH all related data
 export async function getPatient(id) {
   try {
