@@ -690,6 +690,20 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
           </div>
         </div>
 
+        {admissionData.need_to_add_more_procedures === 'Yes' && (
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Other Endoscopy Procedure Details</label>
+            <textarea
+              name="other_endoscopy_procedures"
+              value={admissionData.other_endoscopy_procedures}
+              onChange={handleChange}
+              style={styles.textarea}
+              placeholder="Enter other endoscopy procedure details"
+              disabled={loading}
+            />
+          </div>
+        )}
+
         <div style={styles.formGroup}>
           <label style={styles.label}>Sedation / Anesthesia Type</label>
           <div style={{ ...styles.radioGroup, flexDirection: 'column' }}>
@@ -718,20 +732,6 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
             ))}
           </div>
         </div>
-
-        {admissionData.need_to_add_more_procedures === 'Yes' && (
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Other Endoscopy Procedure Details</label>
-            <textarea
-              name="other_endoscopy_procedures"
-              value={admissionData.other_endoscopy_procedures}
-              onChange={handleChange}
-              style={styles.textarea}
-              placeholder="Enter other endoscopy procedure details"
-              disabled={loading}
-            />
-          </div>
-        )}
 
         <div style={styles.formRow}>
           <div style={styles.formGroup}>

@@ -1320,7 +1320,7 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
         )}
 
         {/* ==================== CONDITION MANAGEMENT ==================== */}
-        <h3 style={styles.subTitle}>Condition Management</h3>
+       
         
         <div style={styles.formGroup}>
           <label style={styles.label}>Can Condition Be Managed</label>
@@ -1434,7 +1434,7 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
         )}
 
         {/* ==================== TYPE OF OPERATION/PROCEDURES ==================== */}
-        <h3 style={styles.subTitle}>Type of Operation/Procedures</h3>
+       
         
         <div style={styles.formGroup}>
           <label style={styles.label}>Type of Operation/Procedures</label>
@@ -1450,7 +1450,7 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
 
         {/* ==================== NEED TO ADD OTHERS COPY ==================== */}
         <div style={styles.formGroup}>
-          <label style={styles.label}>Need to Add Others (Additional)</label>
+          <label style={styles.label}>Any other medical/surgical conditions present?</label>
           <div style={styles.radioGroup}>
             <label style={styles.radioLabel}>
               <input

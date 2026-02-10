@@ -276,7 +276,7 @@ function ReferralLetterForm({ onSubmit, onCancel, loading, initialData = null, p
                 return (
                   <option key={doctor.id} value={doctor.id}>
                     {doctorName || 'Unnamed Doctor'}
-                    {doctor.specialization && ` - ${doctor.specialization}`}
+                    {/* {doctor.specialization && ` - ${doctor.specialization}`} */}
                   </option>
                 );
               })}
