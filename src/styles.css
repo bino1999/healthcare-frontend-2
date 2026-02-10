@@ -766,9 +766,9 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem;
-  background: linear-gradient(to right, #f8fafc, #f1f5f9);
-  border-bottom: 1px solid #e2e8f0;
+  padding: 0.5rem 0.5rem;
+  background: transparent;
+  border-bottom: none;
   font-size: 0.85rem;
   color: #64748b;
 }
@@ -786,25 +786,38 @@ body {
   cursor: pointer;
   font-size: 0.8rem;
   color: #64748b;
-  padding: 0.35rem 0.6rem;
-  border-radius: 6px;
-  transition: all 0.2s ease;
+  padding: 0;
+  width: 40px;
+  height: 36px;
+  border-radius: 10px;
+  transition: all 0.18s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
 .expand-btn:hover {
-  background: #e2e8f0;
+  background: #e9f2ff;
   color: #1e293b;
   border-color: #cbd5e1;
-  transform: scale(1.05);
 }
 
 .expand-btn.expanded {
   background: #3b82f6;
   color: white;
   border-color: #3b82f6;
+}
+
+.expand-icon {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  color: inherit;
+  transition: transform 180ms ease;
+}
+
+.expand-icon.rotated {
+  transform: rotate(90deg);
 }
 
 .row-expanded {
@@ -825,25 +838,28 @@ body {
 }
 
 .expanded-details-row td {
-  padding: 0 !important;
+  padding: 0.4rem 0.75rem !important;
   border-bottom: 1px solid #e2e8f0;
 }
 
 .expanded-details {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1rem;
-  padding: 1rem 1.5rem;
-  background: linear-gradient(to bottom, #f1f5f9, #f8fafc);
-  border-left: 3px solid #3b82f6;
-  margin-left: 40px;
+  gap: 0.6rem;
+  padding: 0.6rem 0.9rem;
+  background: linear-gradient(to bottom, #f8fafc, #f8fafc);
+  border-left: none;
+  margin-left: 0;
 }
 
 .detail-item {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  padding: 0.5rem 0;
+  gap: 0.25rem;
+  padding: 0.45rem 0.5rem;
+  background: #ffffff;
+  border: 1px solid #eef2f7;
+  border-radius: 10px;
 }
 
 .detail-label {
@@ -1072,22 +1088,26 @@ body {
 /* Table column widths */
 .td-mrn {
   white-space: nowrap;
+  white-space: nowrap;
   font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
-  font-size: 0.82rem;
-  color: #64748b;
+  font-size: 0.85rem;
+  color: #1e293b;
+  font-weight: 500;
   letter-spacing: 0.02em;
 }
 
 .td-date {
   white-space: nowrap;
-  font-size: 0.82rem;
-  color: #475569;
+  font-size: 0.85rem;
+  color: #1e293b;
+  font-weight: 500;
 }
 
 .td-insurance {
-  font-size: 0.82rem;
-  color: #475569;
-  max-width: 120px;
+  font-size: 0.85rem;
+  color: #1e293b;
+  font-weight: 500;
+  max-width: 160px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1344,3 +1364,119 @@ body {
     padding: 12px;
   }
 }
+
+/* --- Standardize table buttons: uniform size & alignment --- */
+.table-container .bed-link,
+.table-container .status-button,
+.table-container .btn-view,
+.table-container .data-table td.actions button,
+.table-container .expand-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  min-width: 72px;
+  padding: 0 10px;
+  font-size: 0.86rem;
+  line-height: 1;
+  border-radius: 8px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+/* Slightly reduce font-size for very long button text */
+.table-container .bed-link.small-text,
+.table-container .status-button.small-text,
+.table-container .btn-view.small-text {
+  font-size: 0.82rem;
+  padding: 0 8px;
+}
+
+/* Ensure action cell content is vertically centered */
+.data-table td,
+.dashboard-table td {
+  vertical-align: middle;
+}
+
+/* Tighter action buttons layout */
+.data-table td.actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* Make View button visually consistent */
+.btn-view {
+  height: 34px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.86rem;
+}
+
+@media (max-width: 1024px) {
+  .table-container .bed-link,
+  .table-container .status-button,
+  .table-container .btn-view,
+  .table-container .data-table td.actions button {
+    height: 32px;
+    min-width: 60px;
+    font-size: 0.82rem;
+    padding: 0 8px;
+  }
+}
+
+/* Constrain admission/status badge and allow wrapping; keep IGL badge unmodified */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 110px; /* fixed width to match others */
+  white-space: normal; /* allow wrap to two lines */
+  word-break: break-word;
+  text-align: center;
+  padding: 0 6px;
+  font-size: 0.82rem;
+  line-height: 1.05;
+}
+
+.igl-badge {
+  /* IGL badge keeps its original sizing and appearance */
+  width: 110px;
+  white-space: nowrap;
+  font-size: 0.86rem;
+}
+
+/* If the status text still overflows, reduce font-size to keep single-line where possible */
+.status-badge.long {
+  font-size: 0.78rem;
+  padding: 0.22rem 0.45rem;
+}
+
+/* Remove underline/anchor styling inside badges and ensure consistent centering */
+.status-button,
+.status-button .status-badge,
+.status-button a,
+.status-button a:hover,
+.status-button span,
+.igl-badge,
+.bed-link,
+.btn-view,
+.data-table td.actions button {
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box;
+}
+
+/* Ensure expand button keeps its smaller width */
+.expand-btn {
+  height: 34px;
+  width: 44px;
+  padding: 0.25rem 0.4rem;
+}
+

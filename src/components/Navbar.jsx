@@ -10,9 +10,19 @@ function Navbar({ user }) {
     navigate('/login');
   };
 
+  const handlePortalClick = () => {
+    const role = user?.role?.name || '';
+    // Normalize some common role names
+    if (role === 'Administrator') return navigate('/admin-dashboard');
+    if (role === 'Doctor') return navigate('/doctor-dashboard');
+    if (role === 'Hospital_staff' || role === 'Hospital Staff' || role === 'Hospital_staff') return navigate('/staff-dashboard');
+    // fallback
+    navigate('/dashboard');
+  };
+
   return (
     <nav className="navbar">
-      <div className="navbar-brand">
+      <div className="navbar-brand" style={{ cursor: 'pointer' }} onClick={handlePortalClick} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') handlePortalClick(); }}>
         <h2>Hospital Operation Portal</h2>
       </div>
       

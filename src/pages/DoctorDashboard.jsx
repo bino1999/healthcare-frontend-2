@@ -328,7 +328,9 @@ function DoctorDashboard() {
                               }}
                               title={isExpanded ? 'Collapse' : 'Expand'}
                             >
-                              {isExpanded ? '▼' : '▶'}
+                                <svg className={`expand-icon ${isExpanded ? 'rotated' : ''}`} width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                                  <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" fill="currentColor" />
+                                </svg>
                             </button>
                           </td>
                           <td className="sticky-col">
@@ -397,7 +399,7 @@ function DoctorDashboard() {
                                   <span className="detail-value">{bed?.select_ward?.ward_name || 'N/A'}</span>
                                 </div>
                                 <div className="detail-item">
-                                  <span className="detail-label">Doctor Name</span>
+                                  <span className="detail-label">Doctor</span>
                                   <span className="detail-value">
                                     {patient.user_created?.first_name} {patient.user_created?.last_name || 'N/A'}
                                   </span>
