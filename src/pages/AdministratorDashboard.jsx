@@ -436,6 +436,7 @@ function AdminDashboard() {
                   <th>Admission Status</th>
                   <th>IGL Status</th>
                   <th>Operation Date</th>
+                  <th>Doctor</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -500,11 +501,6 @@ function AdminDashboard() {
                               >
                                 {bed?.bed_no || 'Assign'}
                               </button>
-                              {bed?.Status && (
-                                <span className={`bed-status-tag ${bed.Status.toLowerCase()}`}>
-                                  {bed.Status}
-                                </span>
-                              )}
                             </div>
                           </td>
                           <td>
@@ -532,6 +528,18 @@ function AdminDashboard() {
                             </button>
                           </td>
                           <td className="td-date">{formatDate(admission?.operation_date)}</td>
+                          <td className="td-doctor">
+                            <div className="doctor-cell">
+                              {admission?.user_created?.first_name || patient.user_created?.first_name ? (
+                                <>
+                                  {admission?.user_created?.first_name || patient.user_created?.first_name}{' '}
+                                  {admission?.user_created?.last_name || patient.user_created?.last_name}
+                                </>
+                              ) : (
+                                'N/A'
+                              )}
+                            </div>
+                          </td>
                           <td className="actions">
                             <button 
                               onClick={() => navigate(`/patients/view/${patient.id}`)}
@@ -570,10 +578,12 @@ function AdminDashboard() {
                                   <span className="detail-value">{bed?.select_ward?.ward_name || 'N/A'}</span>
                                 </div>
                                 <div className="detail-item">
-                                  <span className="detail-label">Doctor</span>
-                                  <span className="detail-value">
-                                    {patient.user_created?.first_name} {patient.user_created?.last_name || 'N/A'}
-                                  </span>
+                                  <span className="detail-label">Bed No</span>
+                                  <span className="detail-value">{bed?.bed_no || 'N/A'}</span>
+                                </div>
+                                <div className="detail-item">
+                                  <span className="detail-label">Bed Status</span>
+                                  <span className="detail-value">{bed?.Status || 'N/A'}</span>
                                 </div>
                                 <div className="detail-item">
                                   <span className="detail-label">Created</span>
