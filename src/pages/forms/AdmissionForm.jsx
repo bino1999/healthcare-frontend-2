@@ -556,12 +556,11 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
 
         <div style={styles.formGroup}>
           <label style={styles.label}>Type of Operation or Procedure</label>
-          <input
-            type="text"
+          <textarea
             name="type_of_operation_or_procedure"
             value={admissionData.type_of_operation_or_procedure}
             onChange={handleChange}
-            style={styles.input}
+            style={styles.textarea}
             placeholder="Enter operation/procedure type"
             disabled={loading}
           />
