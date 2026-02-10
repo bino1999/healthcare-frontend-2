@@ -449,8 +449,12 @@ function AdminDashboard() {
                 ) : (
                   filteredPatients.map((patient) => {
                     const admission = getLatestAdmission(patient.patient_Admission);
+                    // console.log(patient.patient_Admission)
                     const insurance = getInsurance(patient.insurance);
+                    console.log(insurance)
                     const bed = getBed(patient.patient_bed);
+                    // Display tpa_name when available; otherwise show 'Self-Pay'
+                    const insuranceLabel = insurance?.tpa_name || 'Self-Pay';
                     const canAssignBed = admission?.status === 'Admission Pending';
                     const isExpanded = expandedRows.has(patient.id);
 
@@ -481,7 +485,7 @@ function AdminDashboard() {
                             </span>
                           </td>
                           <td className="td-mrn">{patient.mrn}</td>
-                          <td className="td-insurance">{insurance?.tpa_name || 'N/A'}</td>
+                          <td className="td-insurance">{insuranceLabel}</td>
                           <td>
                             <div className="bed-cell">
                               <button
@@ -540,7 +544,7 @@ function AdminDashboard() {
                               <div className="expanded-details">
                                 <div className="detail-item">
                                   <span className="detail-label">Insurance</span>
-                                  <span className="detail-value">{insurance?.tpa_name || 'N/A'}</span>
+                                  <span className="detail-value">{insuranceLabel}</span>
                                 </div>
                                 <div className="detail-item">
                                   <span className="detail-label">Policy No</span>

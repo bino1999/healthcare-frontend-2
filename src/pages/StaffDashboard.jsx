@@ -431,6 +431,8 @@ function StaffDashboard() {
                     const insurance = getInsurance(patient.insurance);
                     const admission = getLatestAdmission(patient.patient_Admission);
                     const bed = getBed(patient.patient_bed);
+                    // Display tpa_name when available; otherwise show 'Self-Pay'
+                    const insuranceLabel = insurance?.tpa_name || 'Self-Pay';
                     const canAssignBed = admission?.status === 'Admission Pending';
                     const isExpanded = expandedRows.has(patient.id);
 
@@ -520,7 +522,7 @@ function StaffDashboard() {
                               <div className="expanded-details">
                                 <div className="detail-item">
                                   <span className="detail-label">Insurance</span>
-                                  <span className="detail-value">{insurance?.tpa_name || 'N/A'}</span>
+                                  <span className="detail-value">{insuranceLabel}</span>
                                 </div>
                                 <div className="detail-item">
                                   <span className="detail-label">Policy No</span>
