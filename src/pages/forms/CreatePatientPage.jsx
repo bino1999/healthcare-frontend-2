@@ -15,6 +15,7 @@ function CreatePatientPage() {
   const [error, setError] = useState('');
   const [activeStep, setActiveStep] = useState(1); // 1: Patient, 2: Admission
   const [patientDraft, setPatientDraft] = useState(null);
+  const [admissionDraft, setAdmissionDraft] = useState(null);
 
   const handleBack = () => {
     const roleName = user?.role?.name;
@@ -222,7 +223,13 @@ function CreatePatientPage() {
         {activeStep === 2 && (
           <AdmissionForm
             patientId="draft"
-            onSubmit={handleAdmissionSubmit}
+            initialData={admissionDraft}
+            onChange={setAdmissionDraft}
+            onSubmit={async (admissionData) => {
+              // keep the latest draft before submitting
+              setAdmissionDraft(admissionData);
+              await handleAdmissionSubmit(admissionData);
+            }}
             onCancel={handleCancel}
             loading={loading}
             submitLabel="Create Patient & Admission"

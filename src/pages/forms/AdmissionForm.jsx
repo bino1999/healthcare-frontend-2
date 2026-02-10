@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { getUser } from '../../utils/auth';
 
-function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, submitLabel, cancelLabel, loadingLabel }) {
+function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, submitLabel, cancelLabel, loadingLabel, onChange }) {
   const normalizeDateInput = (dateValue) => {
     if (!dateValue) return '';
     const date = new Date(dateValue);
@@ -101,6 +101,17 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
       confirmation_of: Array.isArray(initialData.confirmation_of) ? initialData.confirmation_of : []
     });
   }, [initialData]);
+
+  // Notify parent of changes so drafts persist between steps
+  useEffect(() => {
+    if (typeof onChange === 'function') {
+      try {
+        onChange(admissionData);
+      } catch (err) {
+        // ignore parent errors
+      }
+    }
+  }, [admissionData, onChange]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
