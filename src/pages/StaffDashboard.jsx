@@ -465,7 +465,7 @@ function StaffDashboard() {
                             </span>
                           </td>
                           <td className="td-mrn">{patient.mrn}</td>
-                          <td className="td-insurance">{insurance?.tpa_name || 'N/A'}</td>
+                          <td className="td-insurance">{insuranceLabel}</td>
                           <td>
                             <div className="bed-cell">
                               <button
