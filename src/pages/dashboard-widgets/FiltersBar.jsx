@@ -5,7 +5,8 @@ function FiltersBar({
   onSearchChange, 
   operationDateFilter = '',
   onOperationDateChange,
-  placeholder = 'Search by patient name, MRN, insurance company, or bed no' 
+  placeholder = 'Search by patient name, MRN, insurance company, IGL status, Admision status or bed no',
+  voiceWidget = null
 }) {
   // Get today's date in YYYY-MM-DD format for the date input
   const today = new Date().toISOString().split('T')[0];
@@ -24,7 +25,7 @@ function FiltersBar({
       </div>
       
       {onOperationDateChange && (
-        <div className="filter-group date-group">
+        <div className="filter-group date-widget-row">
           <label htmlFor="operation-date">Operation Date</label>
           <div className="date-filter-wrapper">
             <input
@@ -52,6 +53,11 @@ function FiltersBar({
               </button>
             )}
           </div>
+          {voiceWidget && (
+            <div style={{ marginLeft: 12 }}>
+              {voiceWidget}
+            </div>
+          )}
         </div>
       )}
     </div>

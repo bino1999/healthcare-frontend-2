@@ -10,6 +10,7 @@ import IglStatusModal from '../components/IglStatusModal';
 import IglStatusPieChart from './charts/IglStatusPieChart';
 import AdmissionStatusPieChart from './charts/AdmissionStatusPieChart';
 import FiltersBar from './dashboard-widgets/FiltersBar';
+import VoiceWidget from './voice/VoiceWidget';
 import KpiCards from './dashboard-widgets/KpiCards';
 
 function AdminDashboard() {
@@ -268,12 +269,15 @@ function AdminDashboard() {
       if (normalizedSearch) {
         const insurance = getInsurance(patient.insurance);
         const bed = getBed(patient.patient_bed);
+        const admission = getLatestAdmission(patient.patient_Admission);
         const searchTarget = [
           patient.patient_name || '',
           patient.mrn || '',
           insurance?.tpa_name || '',
           insurance?.tpa_company || '',
-          bed?.bed_no || ''
+          bed?.bed_no || '',
+          admission?.status || '',
+          (insurance?.IGL_status) || ''
         ].join(' ').toLowerCase();
         if (!searchTarget.includes(normalizedSearch)) return false;
       }
@@ -416,6 +420,7 @@ function AdminDashboard() {
           onSearchChange={setSearchTerm} 
           operationDateFilter={operationDateFilter}
           onOperationDateChange={setOperationDateFilter}
+          voiceWidget={<VoiceWidget />}
         />
 
         {loading ? (

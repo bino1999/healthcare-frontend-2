@@ -1,7 +1,6 @@
 // src/components/Navbar.jsx
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../api/auth';
-import VoiceWidget from '../pages/voice/VoiceWidget';
 
 function Navbar({ user }) {
   const navigate = useNavigate();
@@ -25,9 +24,7 @@ function Navbar({ user }) {
     <nav className="navbar">
       <div className="navbar-brand" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12 }} onClick={handlePortalClick} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') handlePortalClick(); }}>
         <h2 style={{ margin: 0 }}>Hospital Operation Portal</h2>
-        <div style={{ marginLeft: 8 }}>
-          <VoiceWidget />
-        </div>
+        {/* Voice widget removed from header; it will be rendered in dashboard filters */}
       </div>
       
       <div className="navbar-menu">

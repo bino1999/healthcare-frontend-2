@@ -7,6 +7,7 @@ import Navbar from '../components/Navbar';
 import IglStatusPieChart from './charts/IglStatusPieChart';
 import AdmissionStatusPieChart from './charts/AdmissionStatusPieChart';
 import FiltersBar from './dashboard-widgets/FiltersBar';
+import VoiceWidget from './voice/VoiceWidget';
 import KpiCards from './dashboard-widgets/KpiCards';
 
 function DoctorDashboard() {
@@ -123,12 +124,15 @@ function DoctorDashboard() {
       if (normalizedSearch) {
         const insurance = getInsurance(patient.insurance);
         const bed = getBed(patient.patient_bed);
+        const admission = getLatestAdmission(patient.patient_Admission);
         const searchTarget = [
           patient.patient_name || '',
           patient.mrn || '',
           insurance?.tpa_name || '',
           insurance?.tpa_company || '',
-          bed?.bed_no || ''
+          bed?.bed_no || '',
+          admission?.status || '',
+          insurance?.IGL_status || ''
         ].join(' ').toLowerCase();
         if (!searchTarget.includes(normalizedSearch)) return false;
       }
@@ -271,6 +275,7 @@ function DoctorDashboard() {
           onSearchChange={setSearchTerm} 
           operationDateFilter={operationDateFilter}
           onOperationDateChange={setOperationDateFilter}
+          voiceWidget={<VoiceWidget />}
         />
 
         {loading ? (
@@ -286,6 +291,7 @@ function DoctorDashboard() {
                   <th className="th-expand"></th>
                   <th className="sticky-col">Patient Name</th>
                   <th>MRN</th>
+                  <th>Bed No</th>
                   <th>Insurance</th>
                   <th>Admission Status</th>
                   <th>IGL Status</th>
@@ -339,6 +345,7 @@ function DoctorDashboard() {
                             </span>
                           </td>
                           <td className="td-mrn">{patient.mrn}</td>
+                          <td className="td-bed">{bed?.bed_no || 'N/A'}</td>
                           <td className="td-insurance">{insuranceLabel}</td>
 
                           <td>
@@ -375,7 +382,7 @@ function DoctorDashboard() {
                         </tr>
                         {isExpanded && (
                           <tr className="expanded-details-row">
-                            <td colSpan="9">
+                            <td colSpan="10">
                               <div className="expanded-details">
                                 <div className="detail-item">
                                   <span className="detail-label">Insurance</span>
@@ -401,10 +408,6 @@ function DoctorDashboard() {
                                     <span className="detail-label">Ward</span>
                                     <span className="detail-value">{bed?.select_ward?.ward_name || 'N/A'}</span>
                                 </div>
-                                  <div className="detail-item">
-                                    <span className="detail-label">Bed No</span>
-                                    <span className="detail-value">{bed?.bed_no || 'N/A'}</span>
-                                  </div>
                                   <div className="detail-item">
                                     <span className="detail-label">Bed Status</span>
                                     <span className="detail-value">{bed?.Status || 'N/A'}</span>
