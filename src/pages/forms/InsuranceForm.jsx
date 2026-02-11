@@ -1541,10 +1541,10 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
         )}
 
         {/* ==================== PREGNANT INFORMATION ==================== */}
-        <h3 style={styles.subTitle}>Pregnancy Information</h3>
+        {/* <h3 style={styles.subTitle}>Pregnancy Information</h3> */}
         
         <div style={styles.formGroup}>
-          <label style={styles.label}>Pregnant Information</label>
+          <label style={styles.label}>Was the patient pregnant at the time of hospitalization? (For Female Only)</label>
           <div style={styles.radioGroup}>
             <label style={styles.radioLabel}>
               <input

@@ -353,6 +353,58 @@ function PatientDisplayPage() {
           { label: 'Pregnancy Duration', value: insurance.pregnancy_duration }
         ]
       }
+      ,
+      {
+        title: 'Previous Treatment History (Additional)',
+        advanced: true,
+        items: [
+          { label: 'More (flag)', value: insurance.more },
+          { label: 'Previous Date 1', value: formatDate(insurance.date1) },
+          { label: 'Treatment / Hospitalization Details 1', value: insurance.treatment_or_hospitalization_details1 },
+          { label: 'Disease or Disorder 1', value: insurance.disease_or_disorder1 },
+          { label: 'Doctor / Hospital / Clinic 1', value: insurance.doctor_or_hospital_or_clinic1 },
+          { label: 'Previous Date 2', value: formatDate(insurance.date2) },
+          { label: 'Treatment / Hospitalization Details 2', value: insurance.treatment_or_hospitalization_details2 },
+          { label: 'Disease or Disorder 2', value: insurance.disease_or_disorder2 },
+          { label: 'Doctor / Hospital / Clinic 2', value: insurance.doctor_or_hospital_or_clinic2 }
+        ]
+      },
+      {
+        title: 'Diagnosis Details (Advanced)',
+        advanced: true,
+        items: [
+          { label: 'Diagnosis Information', value: insurance.diagnosis_information },
+          { label: 'Provisional Diagnosis', value: insurance.provisional_diagnosis },
+          { label: 'Diagnosis Confirmed', value: insurance.diagnosis_confirmed },
+          { label: 'Advised to Patient', value: insurance.advised_patient },
+          { label: 'Cause & Pathology', value: insurance.cause_and_pathology },
+          { label: 'Any Possibility Of Relapse', value: insurance.any_possibility_of_relapse }
+        ]
+      },
+      {
+        title: 'Admitting Diagnosis (Advanced)',
+        advanced: true,
+        items: [
+          { label: 'Admitting Diagnosis', value: insurance.admitting_diagnosis },
+          { label: 'Admitting Diagnosis Confirmed', value: insurance.admitting_diagnosis_confirmed },
+          { label: 'Admitting Diagnosis Advised Patient', value: insurance.admitting_diagnosis_advised_patien },
+          { label: 'Admitting Diagnosis Cause & Pathology', value: insurance.admitting_diagnosis_cause_and_pathology },
+          { label: 'Admitting Diagnosis Possibility Of Relapse', value: insurance.admitting_diagnosisany_possibility_of_relapse }
+        ]
+      },
+      {
+        title: 'Miscellaneous & Flags',
+        advanced: true,
+        items: [
+          { label: 'Need To Add Others', value: insurance.need_to_add_others },
+          { label: 'Need To Add Others (copy)', value: insurance.need_to_add_others_copy },
+          { label: 'Type Of Operation / Procedures', value: insurance.type_of_operation_procedures },
+          { label: 'Condition 1', value: insurance.Condition_1 },
+          { label: 'Condition 2', value: insurance.Condition_2 },
+          { label: 'Since', value: insurance.since },
+          { label: 'Since (copy)', value: insurance.since_copy }
+        ]
+      }
     ];
   }, [insurance]);
 
