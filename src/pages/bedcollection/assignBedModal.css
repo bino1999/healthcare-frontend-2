@@ -65,8 +65,16 @@
 .modal-table {
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  overflow: hidden;
+  overflow: auto; /* allow internal scrolling */
+  max-height: 55vh; /* constrain table height so it can scroll */
 }
+
+.modal-count {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+  padding-left: 12px;
+} 
 
 .modal-actions {
   display: flex;
