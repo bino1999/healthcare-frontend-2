@@ -756,7 +756,7 @@ function PatientDisplayPage() {
           </DetailSection>
         ))}
 
-        {activeTab === 'admission' && !isStaffView && (
+        {activeTab === 'admission'  && (
           <DetailSection
             title="Admission Details"
             subtitle="Full admission record"
