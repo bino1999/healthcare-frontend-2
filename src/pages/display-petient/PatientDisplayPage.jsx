@@ -267,12 +267,12 @@ function PatientDisplayPage() {
       {
         title: 'Patient Information',
         items: [
-          { label: 'Policy No', value: insurance.Policy_No },
+          { label: 'Policy Number', value: insurance.Policy_No },
           { label: 'Insurance Company', value: insurance.tpa_name },
-          { label: 'IGL Number', value: insurance.IGL_number },
-          { label: 'IGL Status', value: insurance.IGL_status },
-          { label: 'Estimated Cost', value: insurance.estimated_cost },
-          { label: 'Expected Days of Stay', value: insurance.expected_days_of_stay }
+          { label: 'IGL Reference Number', value: insurance.IGL_number },
+          { label: 'IGL Approval Status', value: insurance.IGL_status },
+          { label: 'Estimated Hospital Cost (MYR)', value: insurance.estimated_cost },
+          { label: 'Expected Length of Stay (Days)', value: insurance.expected_days_of_stay }
         ]
       },
 
@@ -280,10 +280,10 @@ function PatientDisplayPage() {
       {
         title: 'Admission Information',
         items: [
-          { label: 'Admission Reason', value: insurance.admission_reason },
-          { label: 'Illness Symptoms First Appeared On', value: formatDate(insurance.illness_symptoms_first_appeared_on_date) },
-          { label: 'Doctor(s) Consulted', value: insurance.doctors_consulted_for_this_illness },
-          { label: "Doctor's / Clinic Contact (Address & Telephone)", value: insurance.doctors_or_clinic_contact }
+          { label: 'Reason for Admission', value: insurance.admission_reason },
+          { label: 'Date Symptoms First Appeared', value: formatDate(insurance.illness_symptoms_first_appeared_on_date) },
+          { label: 'Consulting Doctor(s)', value: insurance.doctors_consulted_for_this_illness },
+          { label: 'Doctor/Clinic Contact Details', value: insurance.doctors_or_clinic_contact }
         ]
       },
 
@@ -292,7 +292,7 @@ function PatientDisplayPage() {
         title: 'Medical Assessment',
         items: [
           { label: 'Diagnosis', value: insurance.diagnosis },
-          { label: 'How Long Is Person Aware', value: insurance.how_long_is_person_aware_of_this_condition },
+          { label: 'Duration of Condition Awareness', value: insurance.how_long_is_person_aware_of_this_condition },
           { label: 'Blood Pressure', value: insurance.blood_pressure },
           { label: 'Temperature', value: insurance.temperature },
           { label: 'Pulse', value: insurance.pulse },
@@ -304,8 +304,8 @@ function PatientDisplayPage() {
       {
         title: 'Previous Consultation',
         items: [
-          { label: 'Any Previous Consultation ', value: insurance.any_previous_consultaion },
-          { label: 'Previous Consultation Details', value: insurance.details_of_previous_consultation }
+          { label: 'Previous Consultations', value: insurance.any_previous_consultaion },
+          { label: 'Details of Previous Consultations', value: insurance.details_of_previous_consultation }
         ]
       },
 
@@ -313,9 +313,9 @@ function PatientDisplayPage() {
       {
         title: 'Referral & Condition History',
         items: [
-          { label: 'Was Patient Referred ', value: insurance.was_this_patient_referred },
-          { label: 'Patient Referred Details', value: insurance.patient_referred_details },
-          { label: 'Condition Exist Before ', value: insurance.condition_exist_before }
+          { label: 'Was the Patient Referred?', value: insurance.was_this_patient_referred },
+          { label: 'Referral Details', value: insurance.patient_referred_details },
+          { label: 'Pre-existing Condition', value: insurance.condition_exist_before }
         ]
       },
 
@@ -324,11 +324,10 @@ function PatientDisplayPage() {
         title: 'Previous Treatment History',
         advanced: true,
         items: [
-          { label: 'Previous Treatment - Date', value: formatDate(insurance.date) },
-          { label: 'Treatment / Hospitalization Details', value: insurance.treatment_or_hospitalization_details },
-          { label: 'Disease / Disorder', value: insurance.disease_or_disorder },
-          { label: 'Doctor / Hospital / Clinic', value: insurance.doctor_or_hospital_or_clinic },
-          { label: 'More (flag)', value: insurance.more }
+          { label: 'Date of Previous Treatment', value: formatDate(insurance.date) },
+          { label: 'Previous Treatment/Hospitalization Details', value: insurance.treatment_or_hospitalization_details },
+          { label: 'Diagnosed Disease/Disorder', value: insurance.disease_or_disorder },
+          { label: 'Treating Doctor/Hospital/Clinic', value: insurance.doctor_or_hospital_or_clinic }
         ]
       },
 
@@ -337,10 +336,10 @@ function PatientDisplayPage() {
         title: 'Previous Treatment History (a)',
         advanced: true,
         items: [
-          { label: 'Date (a)', value: formatDate(insurance.date1) },
-          { label: 'Treatment / Hospital / Clinic (a)', value: insurance.treatment_or_hospitalization_details1 },
-          { label: 'Disease / Disorder (a)', value: insurance.disease_or_disorder1 },
-          { label: 'Doctor / Hospital / Clinic (a)', value: insurance.doctor_or_hospital_or_clinic1 }
+          { label: 'Date of Additional Treatment', value: formatDate(insurance.date1) },
+          { label: 'Additional Treatment/Hospitalization Details', value: insurance.treatment_or_hospitalization_details1 },
+          { label: 'Additional Diagnosed Disease/Disorder', value: insurance.disease_or_disorder1 },
+          { label: 'Additional Treating Doctor/Hospital/Clinic', value: insurance.doctor_or_hospital_or_clinic1 }
         ]
       },
 
@@ -348,10 +347,10 @@ function PatientDisplayPage() {
         title: 'Previous Treatment History (b)',
         advanced: true,
         items: [
-          { label: 'Date (b)', value: formatDate(insurance.date2) },
-          { label: 'Treatment / Hospital / Clinic (b)', value: insurance.treatment_or_hospitalization_details2 },
-          { label: 'Disease / Disorder (b)', value: insurance.disease_or_disorder2 },
-          { label: 'Doctor / Hospital / Clinic (b)', value: insurance.doctor_or_hospital_or_clinic2 }
+          { label: 'Date of Second Additional Treatment', value: formatDate(insurance.date2) },
+          { label: 'Second Additional Treatment/Hospitalization Details', value: insurance.treatment_or_hospitalization_details2 },
+          { label: 'Second Additional Diagnosed Disease/Disorder', value: insurance.disease_or_disorder2 },
+          { label: 'Second Additional Treating Doctor/Hospital/Clinic', value: insurance.doctor_or_hospital_or_clinic2 }
         ]
       },
 
@@ -360,11 +359,11 @@ function PatientDisplayPage() {
         title: 'Diagnosis Information (Provisional)',
         advanced: true,
         items: [
-          { label: 'Provisional Diagnosis', value: insurance.provisional_diagnosis },
-          { label: 'Diagnosis Confirmed', value: insurance.diagnosis_confirmed },
-          { label: 'Advised to Patient', value: insurance.advised_patient },
-          { label: 'Cause & Pathology', value: insurance.cause_and_pathology },
-          { label: 'Any Possibility Of Relapse ', value: insurance.any_possibility_of_relapse }
+          { label: 'Initial (Provisional) Diagnosis', value: insurance.provisional_diagnosis },
+          { label: 'Diagnosis Confirmation', value: insurance.diagnosis_confirmed },
+          { label: 'Advice Given to Patient', value: insurance.advised_patient },
+          { label: 'Cause and Pathology', value: insurance.cause_and_pathology },
+          { label: 'Possibility of Relapse', value: insurance.any_possibility_of_relapse }
         ]
       },
 
@@ -373,11 +372,11 @@ function PatientDisplayPage() {
         title: 'Admitting Diagnosis',
         advanced: true,
         items: [
-          { label: 'Admitting Diagnosis', value: insurance.admitting_diagnosis },
-          { label: 'Admitting Diagnosis Confirmed', value: insurance.admitting_diagnosis_confirmed },
-          { label: 'Admitting Diagnosis - Advised Patient', value: insurance.admitting_diagnosis_advised_patien },
-          { label: 'Admitting Diagnosis Cause & Pathology', value: insurance.admitting_diagnosis_cause_and_pathology },
-          { label: 'Admitting Diagnosis - Any Possibility Of Relapse ', value: insurance.admitting_diagnosisany_possibility_of_relapse }
+          { label: 'Final (Admitting) Diagnosis', value: insurance.admitting_diagnosis },
+          { label: 'Final Diagnosis Confirmation', value: insurance.admitting_diagnosis_confirmed },
+          { label: 'Advice Given for Final Diagnosis', value: insurance.admitting_diagnosis_advised_patien },
+          { label: 'Final Diagnosis: Cause and Pathology', value: insurance.admitting_diagnosis_cause_and_pathology },
+          { label: 'Final Diagnosis: Possibility of Relapse', value: insurance.admitting_diagnosisany_possibility_of_relapse }
         ]
       },
 
@@ -385,11 +384,11 @@ function PatientDisplayPage() {
       {
         title: 'Condition & Other Details',
         items: [
-          { label: 'Condition Related To (checkboxes)', value: insurance.condition_related_to },
-          { label: 'Are there any other conditions to add? ', value: insurance.need_to_add_others },
-          { label: 'Other condition details (shown when Yes)', value: insurance.need_to_add_others_copy },
-          { label: 'Type Of Operation / Procedures', value: insurance.type_of_operation_procedures },
-          { label: 'Other Notes', value: insurance.others }
+          { label: 'Related Conditions', value: insurance.condition_related_to },
+          { label: 'Any Additional Conditions?', value: insurance.need_to_add_others },
+          { label: 'Details of Additional Conditions', value: insurance.need_to_add_others_copy },
+          { label: 'Type of Operation/Procedure', value: insurance.type_of_operation_procedures },
+          { label: 'Additional Notes', value: insurance.others }
         ]
       },
 
@@ -397,11 +396,11 @@ function PatientDisplayPage() {
       {
         title: 'Other Medical / Surgical Conditions',
         items: [
-          { label: 'Any other medical/surgical conditions present? ', value: insurance.need_to_add_others },
-          { label: 'Condition 1', value: insurance.Condition_1 },
-          { label: 'Since (Condition 1)', value: insurance.since },
-          { label: 'Condition 2', value: insurance.Condition_2 },
-          { label: 'Since (Condition 2)', value: insurance.since_copy }
+          { label: 'Other Medical/Surgical Conditions Present?', value: insurance.need_to_add_others },
+          { label: 'Additional Medical/Surgical Condition', value: insurance.Condition_1 },
+          { label: 'Duration/Onset of Condition', value: insurance.since },
+          { label: 'Second Medical/Surgical Condition', value: insurance.Condition_2 },
+          { label: 'Duration/Onset of Second Condition', value: insurance.since_copy }
         ]
       },
 
@@ -410,8 +409,8 @@ function PatientDisplayPage() {
         title: 'Pregnancy',
         advanced: true,
         items: [
-          { label: 'Was the patient pregnant at the time of hospitalization? (For Female Only)', value: insurance.pregnant_information },
-          { label: 'Pregnancy Duration', value: insurance.pregnancy_duration }
+          { label: 'Pregnant at Time of Hospitalization? (Females Only)', value: insurance.pregnant_information },
+          { label: 'Duration of Pregnancy', value: insurance.pregnancy_duration }
         ]
       }
     ];

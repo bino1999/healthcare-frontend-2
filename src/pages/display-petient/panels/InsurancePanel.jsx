@@ -46,16 +46,18 @@ function InsurancePanel({
               </button>
             </div>
             <SectionSearch value={insuranceSearch} onChange={setInsuranceSearch} placeholder="Search insurance details" />
-            <div className="detail-groups">
-              {insuranceSections.map((section) => {
+            <div className="insurance-section-groups">
+              {insuranceSections.map((section, idx) => {
                 if (section.advanced && !showAdvancedInsurance) return null;
                 const items = showAllInsuranceFields ? section.items : section.items.filter(i => !(Array.isArray(i.value) ? i.value.length === 0 : (i.value === null || i.value === undefined || i.value === '')));
                 const filtered = insuranceSearch ? items.filter(item => (`${item.label} ${item.value ?? ''}`).toLowerCase().includes(insuranceSearch.toLowerCase())) : items;
                 if (filtered.length === 0) return null;
                 return (
-                  <div key={section.title} className="detail-group">
-                    <h4 className="detail-group-title">{section.title}</h4>
-                    <DetailGrid items={filtered} />
+                  <div key={section.title} className="insurance-section">
+                    <div className="insurance-section-title">{section.title}</div>
+                    <div className="insurance-section-items">
+                      <DetailGrid items={filtered} />
+                    </div>
                   </div>
                 );
               })}
