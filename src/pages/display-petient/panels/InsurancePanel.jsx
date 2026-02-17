@@ -8,10 +8,7 @@ function InsurancePanel({
   admission,
   patient,
   canManageClinical,
-  showAllInsuranceFields,
-  setShowAllInsuranceFields,
-  showAdvancedInsurance,
-  setShowAdvancedInsurance,
+  // Removed showAllInsuranceFields, setShowAllInsuranceFields, showAdvancedInsurance, setShowAdvancedInsurance
   insuranceSearch,
   setInsuranceSearch,
   editingSection,
@@ -38,18 +35,13 @@ function InsurancePanel({
         ) : (
           <>
             <div className="detail-actions">
-              <button className="toggle-btn" onClick={() => setShowAllInsuranceFields(p => !p)}>
-                {showAllInsuranceFields ? 'Hide empty fields' : 'Show empty fields'}
-              </button>
-              <button className="toggle-btn" onClick={() => setShowAdvancedInsurance(p => !p)}>
-                {showAdvancedInsurance ? 'Hide advanced' : 'Show advanced'}
-              </button>
+              {/* Removed Show advanced and Hide empty fields buttons */}
             </div>
             <SectionSearch value={insuranceSearch} onChange={setInsuranceSearch} placeholder="Search insurance details" />
             <div className="insurance-section-groups">
               {insuranceSections.map((section, idx) => {
-                if (section.advanced && !showAdvancedInsurance) return null;
-                const items = showAllInsuranceFields ? section.items : section.items.filter(i => !(Array.isArray(i.value) ? i.value.length === 0 : (i.value === null || i.value === undefined || i.value === '')));
+                // Removed advanced/empty fields logic; always filter out empty values in parent
+                const items = section.items;
                 const filtered = insuranceSearch ? items.filter(item => (`${item.label} ${item.value ?? ''}`).toLowerCase().includes(insuranceSearch.toLowerCase())) : items;
                 if (filtered.length === 0) return null;
                 return (

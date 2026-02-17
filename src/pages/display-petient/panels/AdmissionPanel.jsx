@@ -9,8 +9,7 @@ function AdmissionPanel({
   canManageClinical,
   showAllAdmissionFields,
   setShowAllAdmissionFields,
-  showAdvancedAdmission,
-  setShowAdvancedAdmission,
+  // Removed showAdvancedAdmission and setShowAdvancedAdmission
   admissionSearch,
   setAdmissionSearch,
   editingSection,
@@ -43,16 +42,14 @@ function AdmissionPanel({
           <>
             <div className="detail-actions">
               <button className="toggle-btn" onClick={() => setShowAllAdmissionFields((p) => !p)}>
-                {showAllAdmissionFields ? 'Hide empty fields' : 'Show empty fields'}
+                {/* Removed Hide empty fields button */}
               </button>
-              <button className="toggle-btn" onClick={() => setShowAdvancedAdmission((p) => !p)}>
-                {showAdvancedAdmission ? 'Hide advanced' : 'Show advanced'}
-              </button>
+              {/* Removed Show advanced button */}
             </div>
             <SectionSearch value={admissionSearch} onChange={setAdmissionSearch} placeholder="Search admission details" />
             <div className="detail-groups">
               {admissionSections.map((section) => {
-                if (section.advanced && !showAdvancedAdmission) return null;
+                // Removed advanced logic; always show filtered sections
                 const items = showAllAdmissionFields ? section.items : section.items.filter(i => !(Array.isArray(i.value) ? i.value.length === 0 : (i.value === null || i.value === undefined || i.value === '')));
                 const filtered = admissionSearch ? items.filter(item => (`${item.label} ${item.value ?? ''}`).toLowerCase().includes(admissionSearch.toLowerCase())) : items;
                 if (filtered.length === 0) return null;

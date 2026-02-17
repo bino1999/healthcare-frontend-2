@@ -63,9 +63,44 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.07);
   padding: 24px 20px;
   transition: box-shadow 0.2s;
+  border-left: 5px solid #2563eb;
 }
 .insurance-section:hover {
   box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+.badge, .chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: #e0e7ff;
+  color: #3730a3;
+  margin-right: 6px;
+  margin-bottom: 2px;
+}
+.badge-yes {
+  background: #dcfce7;
+  color: #15803d;
+}
+.badge-no {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+.badge-pending {
+  background: #fef9c3;
+  color: #a16207;
+}
+.section-header-strong {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #2563eb;
+  border-left: 6px solid #2563eb;
+  padding-left: 12px;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .insurance-section-title {
   font-size: 1.2rem;

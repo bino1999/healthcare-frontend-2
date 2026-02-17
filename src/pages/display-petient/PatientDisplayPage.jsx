@@ -39,7 +39,6 @@ function PatientDisplayPage() {
   const [showCreateAdmission, setShowCreateAdmission] = useState(false);
   const [showCreateInsurance, setShowCreateInsurance] = useState(false);
   const [showAllAdmissionFields, setShowAllAdmissionFields] = useState(false);
-  const [showAllInsuranceFields, setShowAllInsuranceFields] = useState(false);
   const [showCreateReferral, setShowCreateReferral] = useState(false);
   const [showCreateAddOn, setShowCreateAddOn] = useState(false);
   const [aiAnalysisLoading, setAiAnalysisLoading] = useState(false);
@@ -52,7 +51,6 @@ function PatientDisplayPage() {
   const [admissionSearch, setAdmissionSearch] = useState('');
   const [insuranceSearch, setInsuranceSearch] = useState('');
   const [showAdvancedAdmission, setShowAdvancedAdmission] = useState(false);
-  const [showAdvancedInsurance, setShowAdvancedInsurance] = useState(false);
   const {
     patient,
     loading,
@@ -262,31 +260,37 @@ function PatientDisplayPage() {
   const insuranceSections = useMemo(() => {
     if (!insurance) return [];
 
+    // Helper to filter out empty fields
+    const filterItems = (items) => items.filter(
+      (item) => {
+        // If value is a React element, always show (for grouped/conditional fields)
+        if (typeof item.value === 'object' && item.value !== null && !Array.isArray(item.value)) return true;
+        // If value is array, show if not empty
+        if (Array.isArray(item.value)) return item.value.length > 0;
+        // Show if value is not null, undefined, empty string, or 'N/A'
+        return item.value !== null && item.value !== undefined && item.value !== '' && item.value !== 'N/A';
+      }
+    );
+
     // Admission Information: add accident fields if needed
-    const admissionInfoItems = [
+    const admissionInfoItems = filterItems([
       { label: 'ADMISSION REASON', value: insurance.admission_reason },
       { label: 'ILLNESS SYMPTOMS FIRST APPEARED ON DATE', value: formatDate(insurance.illness_symptoms_first_appeared_on_date) },
       { label: 'DOCTOR(S) CONSULTED FOR THIS ILLNESS', value: insurance.doctors_consulted_for_this_illness },
-      { label: "DOCTOR'S OR CLINIC CONTACT", value: insurance.doctors_or_clinic_contact }
-    ];
-    if (
-      insurance.admission_reason &&
-      typeof insurance.admission_reason === 'string' &&
-      insurance.admission_reason.toLowerCase().includes('accident')
-    ) {
-      admissionInfoItems.push(
+      { label: "DOCTOR'S OR CLINIC CONTACT", value: insurance.doctors_or_clinic_contact },
+      ...(insurance.admission_reason && typeof insurance.admission_reason === 'string' && insurance.admission_reason.toLowerCase().includes('accident') ? [
         { label: 'ACCIDENT DATE', value: formatDate(insurance.accident_date) },
         { label: 'ACCIDENT PLACE', value: insurance.accident_place },
         { label: 'ACCIDENT TIME', value: insurance.accident_time },
         { label: 'ACCIDENT DESCRIPTION', value: insurance.accident_description },
         { label: 'ACCIDENT DETAILS', value: insurance.accident_details }
-      );
-    }
+      ] : [])
+    ]);
 
     return [
       {
         title: 'Patient Information',
-        items: [
+        items: filterItems([
           { label: 'POLICY NO./MEMBER ID/CERTIFICATE NO./PLAN/COMPANY NAME', value: insurance.Policy_No },
           { label: 'TPA NAME', value: insurance.tpa_name },
           { label: 'EXPECTED DAYS OF STAY', value: insurance.expected_days_of_stay },
@@ -294,7 +298,7 @@ function PatientDisplayPage() {
           { label: 'TYPE OF OPERATION/PROCEDURE', value: insurance.type_of_operation_procedures },
           { label: 'DIAGNOSIS', value: insurance.diagnosis },
           { label: 'PREGNANT ?', value: insurance.pregnant_information }
-        ]
+        ])
       },
       {
         title: 'Admission Information',
@@ -302,7 +306,7 @@ function PatientDisplayPage() {
       },
       {
         title: 'Medical Assessment',
-        items: [
+        items: filterItems([
           { label: 'HOW LONG IS PATIENT AWARE OF THE CONDITION?', value: insurance.how_long_is_person_aware_of_this_condition },
           { label: 'DATE FIRST CONSULTED', value: formatDate(insurance.date_first_consulted) },
           // Previous Consultation (grouped)
@@ -384,7 +388,7 @@ function PatientDisplayPage() {
               </>
             )
           }
-        ]
+        ])
       },
       {
         title: 'Diagnosis Information',
@@ -397,77 +401,49 @@ function PatientDisplayPage() {
                 <div className="diagnosis-card" style={{ flex: '1 1 320px', minWidth: 320, background: '#fff', borderRadius: 10, boxShadow: '0 1px 4px #e5e7eb', padding: 18, marginBottom: 18 }}>
                   <div style={{ color: '#e11d48', fontWeight: 700, fontSize: 16, marginBottom: 8 }}>DIAGNOSIS TYPE</div>
                   {/* Provisional Diagnosis */}
-                  {insurance.provisional_diagnosis || insurance.diagnosis_information === 'Provisional' ? (
+                  {(insurance.provisional_diagnosis || insurance.diagnosis_information === 'Provisional') && (
                     <div style={{ marginBottom: 18 }}>
                       <div style={{ fontWeight: 600, color: '#222', marginBottom: 4 }}>Provisional Diagnosis</div>
-                      <div style={{ marginBottom: 8 }}>
-                        <b>Diagnosis:</b><br/>
-                        <span style={{ marginLeft: 12 }}>{insurance.provisional_diagnosis || '-'}</span>
-                      </div>
-                      <div style={{ marginBottom: 8 }}>
-                        <b>Confirmed Date:</b><br/>
-                        <span style={{ marginLeft: 12 }}>{formatDate(insurance.diagnosis_confirmed)}</span>
-                      </div>
-                      <div style={{ marginBottom: 8 }}>
-                        <b>Advised Date:</b><br/>
-                        <span style={{ marginLeft: 12 }}>{formatDate(insurance.advised_patient)}</span>
-                      </div>
-                      <div style={{ marginBottom: 8 }}>
-                        <b>Cause/Pathology:</b><br/>
-                        <span style={{ marginLeft: 12 }}>{insurance.cause_and_pathology || '-'}</span>
-                      </div>
-                      <div>
-                        <b>Relapse Possibility:</b><br/>
-                        <span style={{ marginLeft: 12 }}>{insurance.any_possibility_of_relapse || 'no'}</span>
-                      </div>
+                      {insurance.provisional_diagnosis && <div style={{ marginBottom: 8 }}><b>Diagnosis:</b><br/><span style={{ marginLeft: 12 }}>{insurance.provisional_diagnosis}</span></div>}
+                      {insurance.diagnosis_confirmed && <div style={{ marginBottom: 8 }}><b>Confirmed Date:</b><br/><span style={{ marginLeft: 12 }}>{formatDate(insurance.diagnosis_confirmed)}</span></div>}
+                      {insurance.advised_patient && <div style={{ marginBottom: 8 }}><b>Advised Date:</b><br/><span style={{ marginLeft: 12 }}>{formatDate(insurance.advised_patient)}</span></div>}
+                      {insurance.cause_and_pathology && <div style={{ marginBottom: 8 }}><b>Cause/Pathology:</b><br/><span style={{ marginLeft: 12 }}>{insurance.cause_and_pathology}</span></div>}
+                      {insurance.any_possibility_of_relapse && <div><b>Relapse Possibility:</b><br/><span style={{ marginLeft: 12 }}>{insurance.any_possibility_of_relapse}</span></div>}
                     </div>
-                  ) : null}
+                  )}
                   {/* Admitting Diagnosis */}
-                  {insurance.admitting_diagnosis || insurance.diagnosis_information === 'Admitting' ? (
+                  {(insurance.admitting_diagnosis || insurance.diagnosis_information === 'Admitting') && (
                     <div>
                       <div style={{ fontWeight: 600, color: '#222', marginBottom: 4 }}>Admitting Diagnosis</div>
-                      <div style={{ marginBottom: 8 }}>
-                        <b>Diagnosis:</b><br/>
-                        <span style={{ marginLeft: 12 }}>{insurance.admitting_diagnosis || '-'}</span>
-                      </div>
-                      <div style={{ marginBottom: 8 }}>
-                        <b>Confirmed Date:</b><br/>
-                        <span style={{ marginLeft: 12 }}>{formatDate(insurance.admitting_diagnosis_confirmed)}</span>
-                      </div>
-                      <div style={{ marginBottom: 8 }}>
-                        <b>Advised Date:</b><br/>
-                        <span style={{ marginLeft: 12 }}>{formatDate(insurance.admitting_diagnosis_advised_patien)}</span>
-                      </div>
-                      <div style={{ marginBottom: 8 }}>
-                        <b>Cause/Pathology:</b><br/>
-                        <span style={{ marginLeft: 12 }}>{insurance.admitting_diagnosis_cause_and_pathology || '-'}</span>
-                      </div>
-                      <div>
-                        <b>Relapse Possibility:</b><br/>
-                        <span style={{ marginLeft: 12 }}>{insurance.admitting_diagnosisany_possibility_of_relapse || 'no'}</span>
-                      </div>
+                      {insurance.admitting_diagnosis && <div style={{ marginBottom: 8 }}><b>Diagnosis:</b><br/><span style={{ marginLeft: 12 }}>{insurance.admitting_diagnosis}</span></div>}
+                      {insurance.admitting_diagnosis_confirmed && <div style={{ marginBottom: 8 }}><b>Confirmed Date:</b><br/><span style={{ marginLeft: 12 }}>{formatDate(insurance.admitting_diagnosis_confirmed)}</span></div>}
+                      {insurance.admitting_diagnosis_advised_patien && <div style={{ marginBottom: 8 }}><b>Advised Date:</b><br/><span style={{ marginLeft: 12 }}>{formatDate(insurance.admitting_diagnosis_advised_patien)}</span></div>}
+                      {insurance.admitting_diagnosis_cause_and_pathology && <div style={{ marginBottom: 8 }}><b>Cause/Pathology:</b><br/><span style={{ marginLeft: 12 }}>{insurance.admitting_diagnosis_cause_and_pathology}</span></div>}
+                      {insurance.admitting_diagnosisany_possibility_of_relapse && <div><b>Relapse Possibility:</b><br/><span style={{ marginLeft: 12 }}>{insurance.admitting_diagnosisany_possibility_of_relapse}</span></div>}
                     </div>
-                  ) : null}
+                  )}
                 </div>
                 {/* Right: CONDITION RELATED TO */}
-                <div className="diagnosis-card" style={{ flex: '1 1 320px', minWidth: 320, background: '#fff', borderRadius: 10, boxShadow: '0 1px 4px #e5e7eb', padding: 18, marginBottom: 18, border: '2px solid #e11d48' }}>
-                  <div style={{ color: '#e11d48', fontWeight: 700, fontSize: 16, marginBottom: 8 }}>CONDITION RELATED TO</div>
-                  <div style={{ whiteSpace: 'pre-line' }}>{Array.isArray(insurance.condition_related_to) ? insurance.condition_related_to.join(', ') : insurance.condition_related_to || ''}</div>
-                </div>
+                {((Array.isArray(insurance.condition_related_to) && insurance.condition_related_to.length > 0) || (typeof insurance.condition_related_to === 'string' && insurance.condition_related_to)) && (
+                  <div className="diagnosis-card" style={{ flex: '1 1 320px', minWidth: 320, background: '#fff', borderRadius: 10, boxShadow: '0 1px 4px #e5e7eb', padding: 18, marginBottom: 18, border: '2px solid #e11d48' }}>
+                    <div style={{ color: '#e11d48', fontWeight: 700, fontSize: 16, marginBottom: 8 }}>CONDITION RELATED TO</div>
+                    <div style={{ whiteSpace: 'pre-line' }}>{Array.isArray(insurance.condition_related_to) ? insurance.condition_related_to.join(', ') : insurance.condition_related_to}</div>
+                  </div>
+                )}
                 {/* Bottom: ANY OTHER CONDITIONS PRESENT? */}
-                <div className="diagnosis-card" style={{ flex: '1 1 100%', minWidth: 320, background: '#fff', borderRadius: 10, boxShadow: '0 1px 4px #e5e7eb', padding: 18, marginBottom: 0 }}>
-                  <div style={{ color: '#e11d48', fontWeight: 700, fontSize: 16, marginBottom: 8 }}>ANY OTHER CONDITIONS PRESENT?</div>
-                  <div>{insurance.need_to_add_others || 'No'}</div>
-                  <div style={{ marginTop: 8 }}>
-                    <b>Condition Details:</b>
-                    <div style={{ marginLeft: 12 }}>
-                      1. Condition: {insurance.Condition_1 || 'First medical/surgical condition'}<br/>
-                      &nbsp;&nbsp;Since: {formatDate(insurance.since)}<br/>
-                      2. Condition: {insurance.Condition_2 || 'second medical/surgical condition'}<br/>
-                      &nbsp;&nbsp;Since: {formatDate(insurance.since_copy)}
+                {(insurance.need_to_add_others || insurance.Condition_1 || insurance.Condition_2) && (
+                  <div className="diagnosis-card" style={{ flex: '1 1 100%', minWidth: 320, background: '#fff', borderRadius: 10, boxShadow: '0 1px 4px #e5e7eb', padding: 18, marginBottom: 0 }}>
+                    <div style={{ color: '#e11d48', fontWeight: 700, fontSize: 16, marginBottom: 8 }}>ANY OTHER CONDITIONS PRESENT?</div>
+                    {insurance.need_to_add_others && <div>{insurance.need_to_add_others}</div>}
+                    <div style={{ marginTop: 8 }}>
+                      <b>Condition Details:</b>
+                      <div style={{ marginLeft: 12 }}>
+                        {insurance.Condition_1 && (<><span>1. Condition: {insurance.Condition_1}</span><br/>&nbsp;&nbsp;Since: {formatDate(insurance.since)}<br/></>)}
+                        {insurance.Condition_2 && (<><span>2. Condition: {insurance.Condition_2}</span><br/>&nbsp;&nbsp;Since: {formatDate(insurance.since_copy)}</>)}
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             )
           }
@@ -475,20 +451,19 @@ function PatientDisplayPage() {
       },
       {
         title: 'Clinical Assessment',
-        items: [
+        items: filterItems([
           { label: 'Blood Pressure', value: insurance.blood_pressure },
           { label: 'Temperature', value: insurance.temperature },
-          { label: 'Pulse', value: insurance.pulse },
-          
-        ]
+          { label: 'Pulse', value: insurance.pulse }
+        ])
       },
       {
         title: 'Other Details',
-        items: [
+        items: filterItems([
           { label: 'IGL STATUS', value: insurance.IGL_status },
           { label: 'IGL NUMBER', value: insurance.IGL_number },
           { label: 'Pregnancy Duration', value: insurance.pregnancy_duration }
-        ]
+        ])
       }
     ];
   }, [insurance]);
@@ -735,7 +710,7 @@ function PatientDisplayPage() {
             showAllAdmissionFields={showAllAdmissionFields}
             setShowAllAdmissionFields={setShowAllAdmissionFields}
             showAdvancedAdmission={showAdvancedAdmission}
-            setShowAdvancedAdmission={setShowAdvancedAdmission}
+              // setShowAdvancedAdmission is no longer used
             admissionSearch={admissionSearch}
             setAdmissionSearch={setAdmissionSearch}
             editingSection={editingSection}
@@ -755,10 +730,7 @@ function PatientDisplayPage() {
             admission={admission}
             patient={patient}
             canManageClinical={canManageClinical}
-            showAllInsuranceFields={showAllInsuranceFields}
-            setShowAllInsuranceFields={setShowAllInsuranceFields}
-            showAdvancedInsurance={showAdvancedInsurance}
-            setShowAdvancedInsurance={setShowAdvancedInsurance}
+              // showAdvancedInsurance is no longer used
             insuranceSearch={insuranceSearch}
             setInsuranceSearch={setInsuranceSearch}
             editingSection={editingSection}
