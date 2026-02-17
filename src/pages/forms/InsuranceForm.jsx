@@ -1354,7 +1354,7 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
 
         {insuranceData.condition_be_managed === 'No' && (
           <div style={styles.formGroup}>
-            <label style={styles.label}>Reason for Admission</label>
+            <label style={styles.label}>If No, please provide reason for admission</label>
             <textarea
               name="reason_for_admission"
               value={insuranceData.reason_for_admission}
@@ -1390,7 +1390,7 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
 
         {/* ==================== NEED TO ADD OTHERS ==================== */}
         <div style={styles.formGroup}>
-          <label style={styles.label}>Need to Add Others</label>
+          <label style={styles.label}>Are there any other conditions to add?</label>
           <div style={styles.radioGroup}>
             <label style={styles.radioLabel}>
               <input
@@ -1421,7 +1421,7 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
 
         {insuranceData.need_to_add_others === 'Yes' && (
           <div style={styles.formGroup}>
-            <label style={styles.label}>Others</label>
+            <label style={styles.label}>Please provide the other condition details.</label>
             <textarea
               name="others"
               value={insuranceData.others}

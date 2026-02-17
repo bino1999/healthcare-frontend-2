@@ -262,155 +262,232 @@ function PatientDisplayPage() {
   const insuranceSections = useMemo(() => {
     if (!insurance) return [];
 
+    // Admission Information: add accident fields if needed
+    const admissionInfoItems = [
+      { label: 'ADMISSION REASON', value: insurance.admission_reason },
+      { label: 'ILLNESS SYMPTOMS FIRST APPEARED ON DATE', value: formatDate(insurance.illness_symptoms_first_appeared_on_date) },
+      { label: 'DOCTOR(S) CONSULTED FOR THIS ILLNESS', value: insurance.doctors_consulted_for_this_illness },
+      { label: "DOCTOR'S OR CLINIC CONTACT", value: insurance.doctors_or_clinic_contact }
+    ];
+    if (
+      insurance.admission_reason &&
+      typeof insurance.admission_reason === 'string' &&
+      insurance.admission_reason.toLowerCase().includes('accident')
+    ) {
+      admissionInfoItems.push(
+        { label: 'ACCIDENT DATE', value: formatDate(insurance.accident_date) },
+        { label: 'ACCIDENT PLACE', value: insurance.accident_place },
+        { label: 'ACCIDENT TIME', value: insurance.accident_time },
+        { label: 'ACCIDENT DESCRIPTION', value: insurance.accident_description },
+        { label: 'ACCIDENT DETAILS', value: insurance.accident_details }
+      );
+    }
+
     return [
-      // Patient information
       {
         title: 'Patient Information',
         items: [
-          { label: 'Policy Number', value: insurance.Policy_No },
-          { label: 'Insurance Company', value: insurance.tpa_name },
-          { label: 'IGL Reference Number', value: insurance.IGL_number },
-          { label: 'IGL Approval Status', value: insurance.IGL_status },
-          { label: 'Estimated Hospital Cost (MYR)', value: insurance.estimated_cost },
-          { label: 'Expected Length of Stay (Days)', value: insurance.expected_days_of_stay }
+          { label: 'POLICY NO./MEMBER ID/CERTIFICATE NO./PLAN/COMPANY NAME', value: insurance.Policy_No },
+          { label: 'TPA NAME', value: insurance.tpa_name },
+          { label: 'EXPECTED DAYS OF STAY', value: insurance.expected_days_of_stay },
+          { label: 'ESTIMATED COST (RM)', value: insurance.estimated_cost },
+          { label: 'TYPE OF OPERATION/PROCEDURE', value: insurance.type_of_operation_procedures },
+          { label: 'DIAGNOSIS', value: insurance.diagnosis },
+          { label: 'PREGNANT ?', value: insurance.pregnant_information }
         ]
       },
-
-      // Admission information
       {
         title: 'Admission Information',
-        items: [
-          { label: 'Reason for Admission', value: insurance.admission_reason },
-          { label: 'Date Symptoms First Appeared', value: formatDate(insurance.illness_symptoms_first_appeared_on_date) },
-          { label: 'Consulting Doctor(s)', value: insurance.doctors_consulted_for_this_illness },
-          { label: 'Doctor/Clinic Contact Details', value: insurance.doctors_or_clinic_contact }
-        ]
+        items: admissionInfoItems
       },
-
-      // Medical assessment
       {
         title: 'Medical Assessment',
         items: [
-          { label: 'Diagnosis', value: insurance.diagnosis },
-          { label: 'Duration of Condition Awareness', value: insurance.how_long_is_person_aware_of_this_condition },
+          { label: 'HOW LONG IS PATIENT AWARE OF THE CONDITION?', value: insurance.how_long_is_person_aware_of_this_condition },
+          { label: 'DATE FIRST CONSULTED', value: formatDate(insurance.date_first_consulted) },
+          // Previous Consultation (grouped)
+          {
+            label: 'ANY PREVIOUS CONSULTATION?',
+            value: (
+              <>
+                <div>{insurance.any_previous_consultaion}</div>
+                {(insurance.any_previous_consultaion && (insurance.any_previous_consultaion === true || String(insurance.any_previous_consultaion).toLowerCase() === 'yes')) && (
+                  <div style={{ marginTop: 6, color: '#444' }}>
+                    <b>Details:</b> {insurance.details_of_previous_consultation}
+                  </div>
+                )}
+              </>
+            )
+          },
+          // Referral (grouped)
+          {
+            label: 'WAS THIS PATIENT REFERRED?',
+            value: (
+              <>
+                <div>{insurance.was_this_patient_referred}</div>
+                {(insurance.was_this_patient_referred && (insurance.was_this_patient_referred === true || String(insurance.was_this_patient_referred).toLowerCase() === 'yes')) && (
+                  <div style={{ marginTop: 6, color: '#444' }}>
+                    <b>Details:</b> {insurance.patient_referred_details}
+                  </div>
+                )}
+              </>
+            )
+          },
+          // Condition Exist Before (grouped)
+          {
+            label: 'CONDITION EXIST BEFORE',
+            value: (
+              <>
+                <div>{insurance.condition_exist_before}</div>
+                {(insurance.condition_exist_before && (insurance.condition_exist_before === true || String(insurance.condition_exist_before).toLowerCase() === 'yes')) && (
+                  <div style={{ marginTop: 6, color: '#444' }}>
+                    <b>Previous Treatment History:</b>
+                    <div style={{marginLeft: '1em'}}>
+                      <div><b>1. Date:</b> {formatDate(insurance.date)}</div>
+                      <div style={{marginLeft: '1em'}}>
+                        <b>Disease/Disorder:</b> {insurance.disease_or_disorder}<br/>
+                        <b>Treatment:</b> {insurance.treatment_or_hospitalization_details}<br/>
+                        <b>Doctor/Hospital/Clinic:</b> {insurance.doctor_or_hospital_or_clinic}
+                      </div>
+                      <div style={{marginTop: '0.5em'}}><b>2. Date:</b> {formatDate(insurance.date1)}</div>
+                      <div style={{marginLeft: '1em'}}>
+                        <b>Disease/Disorder:</b> {insurance.disease_or_disorder1}<br/>
+                        <b>Treatment:</b> {insurance.treatment_or_hospitalization_details1}<br/>
+                        <b>Doctor/Hospital/Clinic:</b> {insurance.doctor_or_hospital_or_clinic1}
+                      </div>
+                      <div style={{marginTop: '0.5em'}}><b>3. Date:</b> {formatDate(insurance.date2)}</div>
+                      <div style={{marginLeft: '1em'}}>
+                        <b>Disease/Disorder:</b> {insurance.disease_or_disorder2}<br/>
+                        <b>Treatment:</b> {insurance.treatment_or_hospitalization_details2}<br/>
+                        <b>Doctor/Hospital/Clinic:</b> {insurance.doctor_or_hospital_or_clinic2}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            )
+          },
+          // Condition Managed (show details and reason_for_admission)
+          {
+            label: 'CONDITION BE MANAGED',
+            value: (
+              <>
+                <div>{insurance.condition_be_managed}</div>
+                <div style={{ marginTop: 6, color: '#444' }}>
+                  <b>Reason for Admission:</b> {insurance.reason_for_admission}
+                </div>
+                {(insurance.can_be_managed && (insurance.can_be_managed === false || String(insurance.can_be_managed).toLowerCase() === 'no')) && (
+                  <div style={{ marginTop: 6, color: '#444' }}>
+                    <b>Details:</b> {insurance.can_be_managed_details}
+                  </div>
+                )}
+              </>
+            )
+          }
+        ]
+      },
+      {
+        title: 'Diagnosis Information',
+        items: [
+          {
+            label: '',
+            value: (
+              <div className="diagnosis-info-section" style={{ display: 'flex', flexWrap: 'wrap', gap: 24 }}>
+                {/* Left: DIAGNOSIS TYPE */}
+                <div className="diagnosis-card" style={{ flex: '1 1 320px', minWidth: 320, background: '#fff', borderRadius: 10, boxShadow: '0 1px 4px #e5e7eb', padding: 18, marginBottom: 18 }}>
+                  <div style={{ color: '#e11d48', fontWeight: 700, fontSize: 16, marginBottom: 8 }}>DIAGNOSIS TYPE</div>
+                  {/* Provisional Diagnosis */}
+                  {insurance.provisional_diagnosis || insurance.diagnosis_information === 'Provisional' ? (
+                    <div style={{ marginBottom: 18 }}>
+                      <div style={{ fontWeight: 600, color: '#222', marginBottom: 4 }}>Provisional Diagnosis</div>
+                      <div style={{ marginBottom: 8 }}>
+                        <b>Diagnosis:</b><br/>
+                        <span style={{ marginLeft: 12 }}>{insurance.provisional_diagnosis || '-'}</span>
+                      </div>
+                      <div style={{ marginBottom: 8 }}>
+                        <b>Confirmed Date:</b><br/>
+                        <span style={{ marginLeft: 12 }}>{formatDate(insurance.diagnosis_confirmed)}</span>
+                      </div>
+                      <div style={{ marginBottom: 8 }}>
+                        <b>Advised Date:</b><br/>
+                        <span style={{ marginLeft: 12 }}>{formatDate(insurance.advised_patient)}</span>
+                      </div>
+                      <div style={{ marginBottom: 8 }}>
+                        <b>Cause/Pathology:</b><br/>
+                        <span style={{ marginLeft: 12 }}>{insurance.cause_and_pathology || '-'}</span>
+                      </div>
+                      <div>
+                        <b>Relapse Possibility:</b><br/>
+                        <span style={{ marginLeft: 12 }}>{insurance.any_possibility_of_relapse || 'no'}</span>
+                      </div>
+                    </div>
+                  ) : null}
+                  {/* Admitting Diagnosis */}
+                  {insurance.admitting_diagnosis || insurance.diagnosis_information === 'Admitting' ? (
+                    <div>
+                      <div style={{ fontWeight: 600, color: '#222', marginBottom: 4 }}>Admitting Diagnosis</div>
+                      <div style={{ marginBottom: 8 }}>
+                        <b>Diagnosis:</b><br/>
+                        <span style={{ marginLeft: 12 }}>{insurance.admitting_diagnosis || '-'}</span>
+                      </div>
+                      <div style={{ marginBottom: 8 }}>
+                        <b>Confirmed Date:</b><br/>
+                        <span style={{ marginLeft: 12 }}>{formatDate(insurance.admitting_diagnosis_confirmed)}</span>
+                      </div>
+                      <div style={{ marginBottom: 8 }}>
+                        <b>Advised Date:</b><br/>
+                        <span style={{ marginLeft: 12 }}>{formatDate(insurance.admitting_diagnosis_advised_patien)}</span>
+                      </div>
+                      <div style={{ marginBottom: 8 }}>
+                        <b>Cause/Pathology:</b><br/>
+                        <span style={{ marginLeft: 12 }}>{insurance.admitting_diagnosis_cause_and_pathology || '-'}</span>
+                      </div>
+                      <div>
+                        <b>Relapse Possibility:</b><br/>
+                        <span style={{ marginLeft: 12 }}>{insurance.admitting_diagnosisany_possibility_of_relapse || 'no'}</span>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+                {/* Right: CONDITION RELATED TO */}
+                <div className="diagnosis-card" style={{ flex: '1 1 320px', minWidth: 320, background: '#fff', borderRadius: 10, boxShadow: '0 1px 4px #e5e7eb', padding: 18, marginBottom: 18, border: '2px solid #e11d48' }}>
+                  <div style={{ color: '#e11d48', fontWeight: 700, fontSize: 16, marginBottom: 8 }}>CONDITION RELATED TO</div>
+                  <div style={{ whiteSpace: 'pre-line' }}>{Array.isArray(insurance.condition_related_to) ? insurance.condition_related_to.join(', ') : insurance.condition_related_to || ''}</div>
+                </div>
+                {/* Bottom: ANY OTHER CONDITIONS PRESENT? */}
+                <div className="diagnosis-card" style={{ flex: '1 1 100%', minWidth: 320, background: '#fff', borderRadius: 10, boxShadow: '0 1px 4px #e5e7eb', padding: 18, marginBottom: 0 }}>
+                  <div style={{ color: '#e11d48', fontWeight: 700, fontSize: 16, marginBottom: 8 }}>ANY OTHER CONDITIONS PRESENT?</div>
+                  <div>{insurance.need_to_add_others || 'No'}</div>
+                  <div style={{ marginTop: 8 }}>
+                    <b>Condition Details:</b>
+                    <div style={{ marginLeft: 12 }}>
+                      1. Condition: {insurance.Condition_1 || 'First medical/surgical condition'}<br/>
+                      &nbsp;&nbsp;Since: {formatDate(insurance.since)}<br/>
+                      2. Condition: {insurance.Condition_2 || 'second medical/surgical condition'}<br/>
+                      &nbsp;&nbsp;Since: {formatDate(insurance.since_copy)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          }
+        ]
+      },
+      {
+        title: 'Clinical Assessment',
+        items: [
           { label: 'Blood Pressure', value: insurance.blood_pressure },
           { label: 'Temperature', value: insurance.temperature },
           { label: 'Pulse', value: insurance.pulse },
-          { label: 'Date First Consulted', value: formatDate(insurance.date_first_consulted) }
+          
         ]
       },
-
-      // Previous consultation (radio + details)
       {
-        title: 'Previous Consultation',
+        title: 'Other Details',
         items: [
-          { label: 'Previous Consultations', value: insurance.any_previous_consultaion },
-          { label: 'Details of Previous Consultations', value: insurance.details_of_previous_consultation }
-        ]
-      },
-
-      // Referral and condition history
-      {
-        title: 'Referral & Condition History',
-        items: [
-          { label: 'Was the Patient Referred?', value: insurance.was_this_patient_referred },
-          { label: 'Referral Details', value: insurance.patient_referred_details },
-          { label: 'Pre-existing Condition', value: insurance.condition_exist_before }
-        ]
-      },
-
-      // Previous treatment history (primary)
-      {
-        title: 'Previous Treatment History',
-        advanced: true,
-        items: [
-          { label: 'Date of Previous Treatment', value: formatDate(insurance.date) },
-          { label: 'Previous Treatment/Hospitalization Details', value: insurance.treatment_or_hospitalization_details },
-          { label: 'Diagnosed Disease/Disorder', value: insurance.disease_or_disorder },
-          { label: 'Treating Doctor/Hospital/Clinic', value: insurance.doctor_or_hospital_or_clinic }
-        ]
-      },
-
-      // Additional previous history entries
-      {
-        title: 'Previous Treatment History (a)',
-        advanced: true,
-        items: [
-          { label: 'Date of Additional Treatment', value: formatDate(insurance.date1) },
-          { label: 'Additional Treatment/Hospitalization Details', value: insurance.treatment_or_hospitalization_details1 },
-          { label: 'Additional Diagnosed Disease/Disorder', value: insurance.disease_or_disorder1 },
-          { label: 'Additional Treating Doctor/Hospital/Clinic', value: insurance.doctor_or_hospital_or_clinic1 }
-        ]
-      },
-
-      {
-        title: 'Previous Treatment History (b)',
-        advanced: true,
-        items: [
-          { label: 'Date of Second Additional Treatment', value: formatDate(insurance.date2) },
-          { label: 'Second Additional Treatment/Hospitalization Details', value: insurance.treatment_or_hospitalization_details2 },
-          { label: 'Second Additional Diagnosed Disease/Disorder', value: insurance.disease_or_disorder2 },
-          { label: 'Second Additional Treating Doctor/Hospital/Clinic', value: insurance.doctor_or_hospital_or_clinic2 }
-        ]
-      },
-
-      // Diagnosis information: provisional
-      {
-        title: 'Diagnosis Information (Provisional)',
-        advanced: true,
-        items: [
-          { label: 'Initial (Provisional) Diagnosis', value: insurance.provisional_diagnosis },
-          { label: 'Diagnosis Confirmation', value: insurance.diagnosis_confirmed },
-          { label: 'Advice Given to Patient', value: insurance.advised_patient },
-          { label: 'Cause and Pathology', value: insurance.cause_and_pathology },
-          { label: 'Possibility of Relapse', value: insurance.any_possibility_of_relapse }
-        ]
-      },
-
-      // Diagnosis information: admitting
-      {
-        title: 'Admitting Diagnosis',
-        advanced: true,
-        items: [
-          { label: 'Final (Admitting) Diagnosis', value: insurance.admitting_diagnosis },
-          { label: 'Final Diagnosis Confirmation', value: insurance.admitting_diagnosis_confirmed },
-          { label: 'Advice Given for Final Diagnosis', value: insurance.admitting_diagnosis_advised_patien },
-          { label: 'Final Diagnosis: Cause and Pathology', value: insurance.admitting_diagnosis_cause_and_pathology },
-          { label: 'Final Diagnosis: Possibility of Relapse', value: insurance.admitting_diagnosisany_possibility_of_relapse }
-        ]
-      },
-
-      // Condition & other details (checkbox group + 'other' flow)
-      {
-        title: 'Condition & Other Details',
-        items: [
-          { label: 'Related Conditions', value: insurance.condition_related_to },
-          { label: 'Any Additional Conditions?', value: insurance.need_to_add_others },
-          { label: 'Details of Additional Conditions', value: insurance.need_to_add_others_copy },
-          { label: 'Type of Operation/Procedure', value: insurance.type_of_operation_procedures },
-          { label: 'Additional Notes', value: insurance.others }
-        ]
-      },
-
-      // Other medical/surgical conditions with clarified 'since' labels
-      {
-        title: 'Other Medical / Surgical Conditions',
-        items: [
-          { label: 'Other Medical/Surgical Conditions Present?', value: insurance.need_to_add_others },
-          { label: 'Additional Medical/Surgical Condition', value: insurance.Condition_1 },
-          { label: 'Duration/Onset of Condition', value: insurance.since },
-          { label: 'Second Medical/Surgical Condition', value: insurance.Condition_2 },
-          { label: 'Duration/Onset of Second Condition', value: insurance.since_copy }
-        ]
-      },
-
-      // Pregnancy
-      {
-        title: 'Pregnancy',
-        advanced: true,
-        items: [
-          { label: 'Pregnant at Time of Hospitalization? (Females Only)', value: insurance.pregnant_information },
-          { label: 'Duration of Pregnancy', value: insurance.pregnancy_duration }
+          { label: 'IGL STATUS', value: insurance.IGL_status },
+          { label: 'IGL NUMBER', value: insurance.IGL_number },
+          { label: 'Pregnancy Duration', value: insurance.pregnancy_duration }
         ]
       }
     ];
