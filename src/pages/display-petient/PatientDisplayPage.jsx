@@ -297,7 +297,8 @@ function PatientDisplayPage() {
           { label: 'ESTIMATED COST (RM)', value: insurance.estimated_cost },
           { label: 'TYPE OF OPERATION/PROCEDURE', value: insurance.type_of_operation_procedures },
           { label: 'DIAGNOSIS', value: insurance.diagnosis },
-          { label: 'PREGNANT ?', value: insurance.pregnant_information }
+          { label: 'PREGNANT ?', value: insurance.pregnant_information },
+          { label: 'Pregnancy Duration', value: insurance.pregnancy_duration }
         ])
       },
       {
@@ -344,27 +345,42 @@ function PatientDisplayPage() {
               <>
                 <div>{insurance.condition_exist_before}</div>
                 {(insurance.condition_exist_before && (insurance.condition_exist_before === true || String(insurance.condition_exist_before).toLowerCase() === 'yes')) && (
-                  <div style={{ marginTop: 6, color: '#444' }}>
+                  <div style={{ marginTop: 10, color: '#444' }}>
                     <b>Previous Treatment History:</b>
-                    <div style={{marginLeft: '1em'}}>
-                      <div><b>1. Date:</b> {formatDate(insurance.date)}</div>
-                      <div style={{marginLeft: '1em'}}>
-                        <b>Disease/Disorder:</b> {insurance.disease_or_disorder}<br/>
-                        <b>Treatment:</b> {insurance.treatment_or_hospitalization_details}<br/>
-                        <b>Doctor/Hospital/Clinic:</b> {insurance.doctor_or_hospital_or_clinic}
-                      </div>
-                      <div style={{marginTop: '0.5em'}}><b>2. Date:</b> {formatDate(insurance.date1)}</div>
-                      <div style={{marginLeft: '1em'}}>
-                        <b>Disease/Disorder:</b> {insurance.disease_or_disorder1}<br/>
-                        <b>Treatment:</b> {insurance.treatment_or_hospitalization_details1}<br/>
-                        <b>Doctor/Hospital/Clinic:</b> {insurance.doctor_or_hospital_or_clinic1}
-                      </div>
-                      <div style={{marginTop: '0.5em'}}><b>3. Date:</b> {formatDate(insurance.date2)}</div>
-                      <div style={{marginLeft: '1em'}}>
-                        <b>Disease/Disorder:</b> {insurance.disease_or_disorder2}<br/>
-                        <b>Treatment:</b> {insurance.treatment_or_hospitalization_details2}<br/>
-                        <b>Doctor/Hospital/Clinic:</b> {insurance.doctor_or_hospital_or_clinic2}
-                      </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 10 }}>
+                      {/* Entry 1 */}
+                      {(insurance.date || insurance.disease_or_disorder || insurance.treatment_or_hospitalization_details || insurance.doctor_or_hospital_or_clinic) && (
+                        <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: '12px 16px', background: '#fafbfc' }}>
+                          <div style={{ fontWeight: 600, color: '#e11d48', marginBottom: 4 }}>1. Date: {formatDate(insurance.date)}</div>
+                          <div style={{ marginLeft: 8 }}>
+                            <div><b>Disease/Disorder:</b> {insurance.disease_or_disorder}</div>
+                            <div><b>Treatment:</b> {insurance.treatment_or_hospitalization_details}</div>
+                            <div><b>Doctor/Hospital/Clinic:</b> {insurance.doctor_or_hospital_or_clinic}</div>
+                          </div>
+                        </div>
+                      )}
+                      {/* Entry 2 */}
+                      {(insurance.date1 || insurance.disease_or_disorder1 || insurance.treatment_or_hospitalization_details1 || insurance.doctor_or_hospital_or_clinic1) && (
+                        <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: '12px 16px', background: '#fafbfc' }}>
+                          <div style={{ fontWeight: 600, color: '#e11d48', marginBottom: 4 }}>2. Date: {formatDate(insurance.date1)}</div>
+                          <div style={{ marginLeft: 8 }}>
+                            <div><b>Disease/Disorder:</b> {insurance.disease_or_disorder1}</div>
+                            <div><b>Treatment:</b> {insurance.treatment_or_hospitalization_details1}</div>
+                            <div><b>Doctor/Hospital/Clinic:</b> {insurance.doctor_or_hospital_or_clinic1}</div>
+                          </div>
+                        </div>
+                      )}
+                      {/* Entry 3 */}
+                      {(insurance.date2 || insurance.disease_or_disorder2 || insurance.treatment_or_hospitalization_details2 || insurance.doctor_or_hospital_or_clinic2) && (
+                        <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: '12px 16px', background: '#fafbfc' }}>
+                          <div style={{ fontWeight: 600, color: '#e11d48', marginBottom: 4 }}>3. Date: {formatDate(insurance.date2)}</div>
+                          <div style={{ marginLeft: 8 }}>
+                            <div><b>Disease/Disorder:</b> {insurance.disease_or_disorder2}</div>
+                            <div><b>Treatment:</b> {insurance.treatment_or_hospitalization_details2}</div>
+                            <div><b>Doctor/Hospital/Clinic:</b> {insurance.doctor_or_hospital_or_clinic2}</div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -427,21 +443,51 @@ function PatientDisplayPage() {
                 {((Array.isArray(insurance.condition_related_to) && insurance.condition_related_to.length > 0) || (typeof insurance.condition_related_to === 'string' && insurance.condition_related_to)) && (
                   <div className="diagnosis-card" style={{ flex: '1 1 320px', minWidth: 320, background: '#fff', borderRadius: 10, boxShadow: '0 1px 4px #e5e7eb', padding: 18, marginBottom: 18, border: '2px solid #e11d48' }}>
                     <div style={{ color: '#e11d48', fontWeight: 700, fontSize: 16, marginBottom: 8 }}>CONDITION RELATED TO</div>
-                    <div style={{ whiteSpace: 'pre-line' }}>{Array.isArray(insurance.condition_related_to) ? insurance.condition_related_to.join(', ') : insurance.condition_related_to}</div>
+                    <ul style={{ margin: 0, paddingLeft: 24, paddingTop: 4, paddingBottom: 4 }}>
+                      {(Array.isArray(insurance.condition_related_to)
+                        ? insurance.condition_related_to
+                        : insurance.condition_related_to.split(/[,/]/)
+                      )
+                        .map((item, idx) => item && item.trim() && (
+                          <li key={idx} style={{ marginBottom: 6, lineHeight: 1.6 }}>{item.trim()}</li>
+                        ))}
+                    </ul>
                   </div>
                 )}
-                {/* Bottom: ANY OTHER CONDITIONS PRESENT? */}
-                {(insurance.need_to_add_others || insurance.Condition_1 || insurance.Condition_2) && (
-                  <div className="diagnosis-card" style={{ flex: '1 1 100%', minWidth: 320, background: '#fff', borderRadius: 10, boxShadow: '0 1px 4px #e5e7eb', padding: 18, marginBottom: 0 }}>
-                    <div style={{ color: '#e11d48', fontWeight: 700, fontSize: 16, marginBottom: 8 }}>ANY OTHER CONDITIONS PRESENT?</div>
-                    {insurance.need_to_add_others && <div>{insurance.need_to_add_others}</div>}
-                    <div style={{ marginTop: 8 }}>
-                      <b>Condition Details:</b>
-                      <div style={{ marginLeft: 12 }}>
-                        {insurance.Condition_1 && (<><span>1. Condition: {insurance.Condition_1}</span><br/>&nbsp;&nbsp;Since: {formatDate(insurance.since)}<br/></>)}
-                        {insurance.Condition_2 && (<><span>2. Condition: {insurance.Condition_2}</span><br/>&nbsp;&nbsp;Since: {formatDate(insurance.since_copy)}</>)}
+                {/* Bottom: ANY OTHER CONDITIONS PRESENT? (as two side-by-side groups) */}
+                {(insurance.need_to_add_others_copy || insurance.Condition_1 || insurance.Condition_2 || insurance.need_to_add_others) && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, marginBottom: 0 }}>
+                    {/* Group 1: Any other medical/surgical conditions present? */}
+                    {(insurance.need_to_add_others_copy || insurance.Condition_1 || insurance.Condition_2) && (
+                      <div className="diagnosis-card" style={{ flex: '1 1 340px', minWidth: 320, background: '#fff', borderRadius: 10, boxShadow: '0 1px 4px #e5e7eb', padding: 18 }}>
+                        <div style={{ color: '#e11d48', fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
+                          Any other medical/surgical conditions present?
+                        </div>
+                        {insurance.need_to_add_others_copy && <div>{insurance.need_to_add_others_copy}</div>}
+                        <div style={{ marginTop: 8 }}>
+                          <b>Condition Details:</b>
+                          <div style={{ marginLeft: 12 }}>
+                            {insurance.Condition_1 && (<><span>1. Condition: {insurance.Condition_1}</span><br/>&nbsp;&nbsp;Since: {formatDate(insurance.since)}<br/></>)}
+                            {insurance.Condition_2 && (<><span>2. Condition: {insurance.Condition_2}</span><br/>&nbsp;&nbsp;Since: {formatDate(insurance.since_copy)}</>)}
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    )}
+                    {/* Group 2: Are there any other conditions to add? */}
+                    {insurance.need_to_add_others && (
+                      <div className="diagnosis-card" style={{ flex: '1 1 340px', minWidth: 320, background: '#fff', borderRadius: 10, boxShadow: '0 1px 4px #e5e7eb', padding: 18 }}>
+                        <div style={{ color: '#e11d48', fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
+                          Are there any other conditions to add?
+                        </div>
+                        <div><b>Other Condition Present?</b> <span>{insurance.need_to_add_others}</span></div>
+                        {(insurance.need_to_add_others === true || String(insurance.need_to_add_others).toLowerCase() === 'yes') && (
+                          <div style={{ marginTop: 8, marginLeft: 12 }}>
+                            <b>Please provide the other condition details.</b>
+                            <div style={{ marginTop: 4 }}>{insurance.others}</div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -462,7 +508,6 @@ function PatientDisplayPage() {
         items: filterItems([
           { label: 'IGL STATUS', value: insurance.IGL_status },
           { label: 'IGL NUMBER', value: insurance.IGL_number },
-          { label: 'Pregnancy Duration', value: insurance.pregnancy_duration }
         ])
       }
     ];
