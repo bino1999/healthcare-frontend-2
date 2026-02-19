@@ -1488,7 +1488,7 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
 
         {insuranceData.condition_be_managed === 'No' && (
           <div style={styles.formGroup}>
-            <label style={styles.label}>If No, please provide reason for admission</label>
+            <label style={styles.label}>If No please provide reason for admission</label>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <textarea
                 name="reason_for_admission"
