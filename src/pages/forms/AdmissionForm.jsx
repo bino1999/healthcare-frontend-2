@@ -670,14 +670,22 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
         {admissionData.need_to_add_others === 'Yes' && (
           <div style={styles.formGroup}>
             <label style={styles.label}>Other Investigation Details</label>
-            <textarea
-              name="other_investigation"
-              value={admissionData.other_investigation}
-              onChange={handleChange}
-              style={styles.textarea}
-              placeholder="Enter other investigation details"
-              disabled={loading}
-            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <textarea
+                name="other_investigation"
+                value={admissionData.other_investigation}
+                onChange={handleChange}
+                style={styles.textarea}
+                placeholder="Enter other investigation details"
+                disabled={loading}
+              />
+              <VoiceInputButton
+                listening={listeningField === 'other_investigation'}
+                onClick={() => toggleListening('other_investigation')}
+                ariaLabel="Voice input for other investigation details"
+                disabled={loading || !recognitionSupported}
+              />
+            </div>
           </div>
         )}
 

@@ -374,6 +374,33 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
       fontSize: '0.95rem',
       boxSizing: 'border-box'
     },
+    /* when an input/textarea has a mic button appended we add extra right padding */
+    inputWithMic: {
+      width: '100%',
+      padding: '10px 44px 10px 10px',
+      border: '1px solid #cbd5e0',
+      borderRadius: '4px',
+      fontSize: '0.95rem',
+      boxSizing: 'border-box'
+    },
+    textareaWithMic: {
+      width: '100%',
+      padding: '10px 44px 10px 10px',
+      border: '1px solid #cbd5e0',
+      borderRadius: '4px',
+      fontSize: '0.95rem',
+      boxSizing: 'border-box',
+      minHeight: '80px',
+      resize: 'vertical'
+    },
+    /* absolute positioning for appended mic */
+    micAbsolute: {
+      position: 'absolute',
+      right: 8,
+      top: '50%',
+      transform: 'translateY(-50%)',
+      zIndex: 2
+    },
     inputError: {
       width: '100%',
       padding: '10px',
@@ -1119,41 +1146,68 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
 
                   <div style={styles.formGroup}>
                     <label style={styles.label}>Disease or Disorder</label>
-                    <input
-                      type="text"
-                      name="disease_or_disorder1"
-                      value={insuranceData.disease_or_disorder1}
-                      onChange={handleChange}
-                      style={styles.input}
-                      placeholder="Enter disease or disorder"
-                      disabled={loading}
-                    />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative' }}>
+                      <input
+                        type="text"
+                        name="disease_or_disorder1"
+                        value={insuranceData.disease_or_disorder1}
+                        onChange={handleChange}
+                        style={styles.inputWithMic}
+                        placeholder="Enter disease or disorder"
+                        disabled={loading}
+                      />
+                      <VoiceInputButton
+                        listening={listeningField === 'disease_or_disorder1'}
+                        onClick={() => toggleListening('disease_or_disorder1')}
+                        ariaLabel="Voice input for disease or disorder (record 1)"
+                        disabled={loading || !recognitionSupported}
+                        style={styles.micAbsolute}
+                      />
+                    </div>
                   </div>
                 </div>
 
                 <div style={styles.formGroup}>
                   <label style={styles.label}>Treatment or Hospitalization Details</label>
-                  <textarea
-                    name="treatment_or_hospitalization_details1"
-                    value={insuranceData.treatment_or_hospitalization_details1}
-                    onChange={handleChange}
-                    style={styles.textarea}
-                    placeholder="Enter treatment details"
-                    disabled={loading}
-                  />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative' }}>
+                    <textarea
+                      name="treatment_or_hospitalization_details1"
+                      value={insuranceData.treatment_or_hospitalization_details1}
+                      onChange={handleChange}
+                      style={styles.textareaWithMic}
+                      placeholder="Enter treatment details"
+                      disabled={loading}
+                    />
+                    <VoiceInputButton
+                      listening={listeningField === 'treatment_or_hospitalization_details1'}
+                      onClick={() => toggleListening('treatment_or_hospitalization_details1')}
+                      ariaLabel="Voice input for treatment/hospitalization details (record 1)"
+                      disabled={loading || !recognitionSupported}
+                      style={styles.micAbsolute}
+                    />
+                  </div>
                 </div>
 
                 <div style={styles.formGroup}>
                   <label style={styles.label}>Doctor or Hospital or Clinic</label>
-                  <input
-                    type="text"
-                    name="doctor_or_hospital_or_clinic1"
-                    value={insuranceData.doctor_or_hospital_or_clinic1}
-                    onChange={handleChange}
-                    style={styles.input}
-                    placeholder="Enter doctor/hospital/clinic name"
-                    disabled={loading}
-                  />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative' }}>
+                    <input
+                      type="text"
+                      name="doctor_or_hospital_or_clinic1"
+                      value={insuranceData.doctor_or_hospital_or_clinic1}
+                      onChange={handleChange}
+                      style={styles.inputWithMic}
+                      placeholder="Enter doctor/hospital/clinic name"
+                      disabled={loading}
+                    />
+                    <VoiceInputButton
+                      listening={listeningField === 'doctor_or_hospital_or_clinic1'}
+                      onClick={() => toggleListening('doctor_or_hospital_or_clinic1')}
+                      ariaLabel="Voice input for doctor/hospital/clinic (record 1)"
+                      disabled={loading || !recognitionSupported}
+                      style={styles.micAbsolute}
+                    />
+                  </div>
                 </div>
 
                 <h4 style={{ color: '#2c3e50', marginTop: '20px', marginBottom: '15px' }}>Additional History Record 2</h4>
@@ -1173,41 +1227,68 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
 
                   <div style={styles.formGroup}>
                     <label style={styles.label}>Disease or Disorder</label>
-                    <input
-                      type="text"
-                      name="disease_or_disorder2"
-                      value={insuranceData.disease_or_disorder2}
-                      onChange={handleChange}
-                      style={styles.input}
-                      placeholder="Enter disease or disorder"
-                      disabled={loading}
-                    />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative' }}>
+                      <input
+                        type="text"
+                        name="disease_or_disorder2"
+                        value={insuranceData.disease_or_disorder2}
+                        onChange={handleChange}
+                        style={styles.inputWithMic}
+                        placeholder="Enter disease or disorder"
+                        disabled={loading}
+                      />
+                      <VoiceInputButton
+                        listening={listeningField === 'disease_or_disorder2'}
+                        onClick={() => toggleListening('disease_or_disorder2')}
+                        ariaLabel="Voice input for disease or disorder (record 2)"
+                        disabled={loading || !recognitionSupported}
+                        style={styles.micAbsolute}
+                      />
+                    </div>
                   </div>
                 </div>
 
                 <div style={styles.formGroup}>
                   <label style={styles.label}>Treatment or Hospitalization Details</label>
-                  <textarea
-                    name="treatment_or_hospitalization_details2"
-                    value={insuranceData.treatment_or_hospitalization_details2}
-                    onChange={handleChange}
-                    style={styles.textarea}
-                    placeholder="Enter treatment details"
-                    disabled={loading}
-                  />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative' }}>
+                    <textarea
+                      name="treatment_or_hospitalization_details2"
+                      value={insuranceData.treatment_or_hospitalization_details2}
+                      onChange={handleChange}
+                      style={styles.textareaWithMic}
+                      placeholder="Enter treatment details"
+                      disabled={loading}
+                    />
+                    <VoiceInputButton
+                      listening={listeningField === 'treatment_or_hospitalization_details2'}
+                      onClick={() => toggleListening('treatment_or_hospitalization_details2')}
+                      ariaLabel="Voice input for treatment/hospitalization details (record 2)"
+                      disabled={loading || !recognitionSupported}
+                      style={styles.micAbsolute}
+                    />
+                  </div>
                 </div>
 
                 <div style={styles.formGroup}>
                   <label style={styles.label}>Doctor or Hospital or Clinic</label>
-                  <input
-                    type="text"
-                    name="doctor_or_hospital_or_clinic2"
-                    value={insuranceData.doctor_or_hospital_or_clinic2}
-                    onChange={handleChange}
-                    style={styles.input}
-                    placeholder="Enter doctor/hospital/clinic name"
-                    disabled={loading}
-                  />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative' }}>
+                    <input
+                      type="text"
+                      name="doctor_or_hospital_or_clinic2"
+                      value={insuranceData.doctor_or_hospital_or_clinic2}
+                      onChange={handleChange}
+                      style={styles.inputWithMic}
+                      placeholder="Enter doctor/hospital/clinic name"
+                      disabled={loading}
+                    />
+                    <VoiceInputButton
+                      listening={listeningField === 'doctor_or_hospital_or_clinic2'}
+                      onClick={() => toggleListening('doctor_or_hospital_or_clinic2')}
+                      ariaLabel="Voice input for doctor/hospital/clinic (record 2)"
+                      disabled={loading || !recognitionSupported}
+                      style={styles.micAbsolute}
+                    />
+                  </div>
                 </div>
               </div>
             )}
