@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react';
 import directus from '../../api/directus';
 import { readItems } from '@directus/sdk';
+import useSpeechRecognition from '../../hooks/useSpeechRecognition';
+import VoiceInputButton from '../../components/VoiceInputButton';
 
 function ReferralLetterForm({ onSubmit, onCancel, loading, initialData = null, patientId = null }) {
   const [formData, setFormData] = useState({
@@ -15,6 +17,15 @@ function ReferralLetterForm({ onSubmit, onCancel, loading, initialData = null, p
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
+
+  const { recognitionSupported, listeningField, toggleListening } = useSpeechRecognition({
+    lang: 'en-US',
+    onResult: (field, transcript) => {
+      const value = transcript.trim();
+      setFormData(prev => ({ ...prev, [field]: value }));
+    },
+    onError: (err) => console.error('Speech recognition error', err)
+  });
 
   useEffect(() => {
     fetchData();
@@ -304,14 +315,22 @@ function ReferralLetterForm({ onSubmit, onCancel, loading, initialData = null, p
           <label style={styles.label}>
             Referral Reason <span style={styles.required}>*</span>
           </label>
-          <textarea
-            name="referral_reason"
-            value={formData.referral_reason}
-            onChange={handleChange}
-            style={errors.referral_reason ? styles.inputError : styles.textarea}
-            placeholder="Enter the reason for referral, including patient's condition, diagnosis, and required specialist consultation..."
-            disabled={loading}
-          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <textarea
+              name="referral_reason"
+              value={formData.referral_reason}
+              onChange={handleChange}
+              style={errors.referral_reason ? styles.inputError : styles.textarea}
+              placeholder="Enter the reason for referral, including patient's condition, diagnosis, and required specialist consultation..."
+              disabled={loading}
+            />
+            <VoiceInputButton
+              listening={listeningField === 'referral_reason'}
+              onClick={() => toggleListening('referral_reason')}
+              ariaLabel="Voice input for referral reason"
+              disabled={loading || !recognitionSupported}
+            />
+          </div>
           {errors.referral_reason && <span style={styles.errorMessage}>{errors.referral_reason}</span>}
         </div>
       </div>

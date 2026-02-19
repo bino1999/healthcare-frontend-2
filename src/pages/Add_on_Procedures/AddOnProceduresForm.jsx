@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import useSpeechRecognition from '../../hooks/useSpeechRecognition';
+import VoiceInputButton from '../../components/VoiceInputButton';
 
 function AddOnProceduresForm({ onSubmit, onCancel, loading, initialData = null, patientId = null }) {
   const [formData, setFormData] = useState({
@@ -10,7 +12,17 @@ function AddOnProceduresForm({ onSubmit, onCancel, loading, initialData = null, 
 
   const [errors, setErrors] = useState({});
 
-  const handleChange = (event) => {
+  const { recognitionSupported, listeningField, toggleListening } = useSpeechRecognition({
+    lang: 'en-US',
+    onResult: (field, transcript) => {
+      let value = transcript.trim();
+      if (field === 'estimated_cost') value = value.replace(/[^\d.]/g, '');
+      setFormData(prev => ({ ...prev, [field]: value }));
+    },
+    onError: (err) => console.error('Speech recognition error', err)
+  });
+
+  const handleChange = (event) => { 
     const { name, value } = event.target;
     setFormData((prev) => ({
       ...prev,
@@ -156,13 +168,21 @@ function AddOnProceduresForm({ onSubmit, onCancel, loading, initialData = null, 
           <label style={styles.label}>
             Procedure Description
           </label>
-          <textarea
-            name="procedure_description"
-            value={formData.procedure_description}
-            onChange={handleChange}
-            style={styles.textarea}
-            placeholder="Describe the add-on procedure"
-          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <textarea
+              name="procedure_description"
+              value={formData.procedure_description}
+              onChange={handleChange}
+              style={styles.textarea}
+              placeholder="Describe the add-on procedure"
+            />
+            <VoiceInputButton
+              listening={listeningField === 'procedure_description'}
+              onClick={() => toggleListening('procedure_description')}
+              ariaLabel="Voice input for procedure description"
+              disabled={loading || !recognitionSupported}
+            />
+          </div>
         </div>
 
         <div style={styles.formGroup}>
@@ -185,16 +205,24 @@ function AddOnProceduresForm({ onSubmit, onCancel, loading, initialData = null, 
           <label style={styles.label}>
             Estimated Cost (RM) <span style={styles.required}>*</span>
           </label>
-          <input
-            type="number"
-            name="estimated_cost"
-            value={formData.estimated_cost}
-            onChange={handleChange}
-            style={errors.estimated_cost ? styles.inputError : styles.input}
-            placeholder="0.00"
-            min="0"
-            step="0.01"
-          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <input
+              type="number"
+              name="estimated_cost"
+              value={formData.estimated_cost}
+              onChange={handleChange}
+              style={errors.estimated_cost ? styles.inputError : styles.input}
+              placeholder="0.00"
+              min="0"
+              step="0.01"
+            />
+            <VoiceInputButton
+              listening={listeningField === 'estimated_cost'}
+              onClick={() => toggleListening('estimated_cost')}
+              ariaLabel="Voice input for estimated cost"
+              disabled={loading || !recognitionSupported}
+            />
+          </div>
           {errors.estimated_cost && (
             <span style={styles.errorMessage}>{errors.estimated_cost}</span>
           )}

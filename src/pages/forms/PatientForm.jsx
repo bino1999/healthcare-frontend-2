@@ -1,5 +1,7 @@
 // src/components/forms/PatientForm.jsx
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import useSpeechRecognition from '../../hooks/useSpeechRecognition';
+import VoiceInputButton from '../../components/VoiceInputButton';
 
 function PatientForm({ initialData, onSubmit, onCancel, loading, submitLabel, cancelLabel, loadingLabel }) {
   const normalizeDateInput = (dateValue) => {
@@ -21,10 +23,6 @@ function PatientForm({ initialData, onSubmit, onCancel, loading, submitLabel, ca
 
   const [errors, setErrors] = useState({});
 
-  // Speech recognition helpers
-  const recognitionRef = useRef(null);
-  const [listeningField, setListeningField] = useState(null);
-  const recognitionSupported = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
 
   useEffect(() => {
     if (!initialData) return;
@@ -51,74 +49,22 @@ function PatientForm({ initialData, onSubmit, onCancel, loading, submitLabel, ca
     }
   };
 
-  // --- Speech recognition (voice typing) ---
-  const toggleListening = (field) => {
-    if (!recognitionSupported) {
-      alert('Speech recognition is not supported in this browser.');
-      return;
-    }
-
-    // If already listening this field, stop
-    if (listeningField === field) {
-      try { recognitionRef.current?.stop(); } catch (e) { /* ignore */ }
-      setListeningField(null);
-      return;
-    }
-
-    // Stop any existing recognition
-    if (recognitionRef.current) {
-      try { recognitionRef.current.stop(); } catch (e) { /* ignore */ }
-      recognitionRef.current = null;
-    }
-
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'en-US';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
-    recognition.onresult = (event) => {
-      const transcript = (event.results && event.results[0] && event.results[0][0] && event.results[0][0].transcript) || '';
+  const { recognitionSupported, listeningField, toggleListening } = useSpeechRecognition({
+    lang: 'en-US',
+    onResult: (field, transcript) => {
       let value = transcript.trim();
-
-      // Basic normalization for special fields
       if (field === 'contact_number') {
-        // keep digits only
         value = value.replace(/\D+/g, '');
       } else if (field === 'email') {
-        // try to convert spoken 'at' / 'dot' into email punctuation
         value = value.toLowerCase()
           .replace(/\s+at\s+/g, '@')
           .replace(/\s+dot\s+/g, '.')
           .replace(/\s+/g, '');
       }
-
       setPatientData((prev) => ({ ...prev, [field]: value }));
-      setListeningField(null);
-      try { recognition.stop(); } catch (e) { /* ignore */ }
-    };
-
-    recognition.onerror = (err) => {
-      console.error('Speech recognition error', err);
-      setListeningField(null);
-    };
-
-    recognition.onend = () => {
-      setListeningField(null);
-    };
-
-    recognitionRef.current = recognition;
-    setListeningField(field);
-    recognition.start();
-  };
-
-  useEffect(() => {
-    return () => {
-      if (recognitionRef.current) {
-        try { recognitionRef.current.stop(); } catch (e) { /* ignore */ }
-      }
-    };
-  }, []);
+    },
+    onError: (err) => console.error('Speech recognition error', err)
+  });
 
   const validate = () => {
     const newErrors = {};
@@ -287,18 +233,12 @@ function PatientForm({ initialData, onSubmit, onCancel, loading, submitLabel, ca
                 placeholder="Enter patient name"
                 disabled={loading}
               />
-              <button
-                type="button"
-                aria-label="Voice input for patient name"
+              <VoiceInputButton
+                listening={listeningField === 'patient_name'}
                 onClick={() => toggleListening('patient_name')}
-                style={{
-                  ...styles.micButton,
-                  ...(listeningField === 'patient_name' ? styles.micActive : {})
-                }}
+                ariaLabel="Voice input for patient name"
                 disabled={loading || !recognitionSupported}
-              >
-                <span role="img" aria-label="mic">🎤</span>
-              </button>
+              />
             </div>
             {errors.patient_name && <span style={styles.errorMessage}>{errors.patient_name}</span>}
           </div>
@@ -387,18 +327,12 @@ function PatientForm({ initialData, onSubmit, onCancel, loading, submitLabel, ca
                 placeholder="Enter contact number"
                 disabled={loading}
               />
-              <button
-                type="button"
-                aria-label="Voice input for contact number"
+              <VoiceInputButton
+                listening={listeningField === 'contact_number'}
                 onClick={() => toggleListening('contact_number')}
-                style={{
-                  ...styles.micButton,
-                  ...(listeningField === 'contact_number' ? styles.micActive : {})
-                }}
+                ariaLabel="Voice input for contact number"
                 disabled={loading || !recognitionSupported}
-              >
-                <span role="img" aria-label="mic">🎤</span>
-              </button>
+              />
             </div>
             {errors.contact_number && <span style={styles.errorMessage}>{errors.contact_number}</span>}
           </div>
@@ -416,18 +350,12 @@ function PatientForm({ initialData, onSubmit, onCancel, loading, submitLabel, ca
               placeholder="Enter email address"
               disabled={loading}
             />
-            <button
-              type="button"
-              aria-label="Voice input for email"
+            <VoiceInputButton
+              listening={listeningField === 'email'}
               onClick={() => toggleListening('email')}
-              style={{
-                ...styles.micButton,
-                ...(listeningField === 'email' ? styles.micActive : {})
-              }}
+              ariaLabel="Voice input for email"
               disabled={loading || !recognitionSupported}
-            >
-              <span role="img" aria-label="mic">🎤</span>
-            </button>
+            />
           </div>
           {errors.email && <span style={styles.errorMessage}>{errors.email}</span>}
         </div>

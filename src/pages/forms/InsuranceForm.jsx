@@ -1,6 +1,8 @@
 // src/components/forms/InsuranceForm.jsx
 import { useEffect, useState } from 'react';
 import { getUser } from '../../utils/auth';
+import useSpeechRecognition from '../../hooks/useSpeechRecognition';
+import VoiceInputButton from '../../components/VoiceInputButton';
 
 
 function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initialData, submitLabel, cancelLabel, loadingLabel, skipLabel }) {
@@ -131,6 +133,18 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
   
 
   const [errors, setErrors] = useState({});
+
+  const { recognitionSupported, listeningField, toggleListening } = useSpeechRecognition({
+    lang: 'en-US',
+    onResult: (field, transcript) => {
+      let value = transcript.trim();
+      if (field === 'estimated_cost') {
+        value = value.replace(/[^\d.]/g, '');
+      }
+      setInsuranceData(prev => ({ ...prev, [field]: value }));
+    },
+    onError: (err) => console.error('Speech recognition error', err)
+  });
 
   const conditionRelatedToOptions = [
     'Pregnancy/Childbirth/Infertility/Caesarean section/miscarriage OR any complications arising therefrom',
@@ -574,17 +588,25 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
         <div style={styles.formRow}>
           <div style={styles.formGroup}>
             <label style={styles.label}>Estimated Cost (RM)</label>
-            <input
-              type="number"
-              name="estimated_cost"
-              value={insuranceData.estimated_cost}
-              onChange={handleChange}
-              style={styles.input}
-              placeholder="0.00"
-              step="0.01"
-              min="0"
-              disabled={loading}
-            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input
+                type="number"
+                name="estimated_cost"
+                value={insuranceData.estimated_cost}
+                onChange={handleChange}
+                style={styles.input}
+                placeholder="0.00"
+                step="0.01"
+                min="0"
+                disabled={loading}
+              />
+              <VoiceInputButton
+                listening={listeningField === 'estimated_cost'}
+                onClick={() => toggleListening('estimated_cost')}
+                ariaLabel="Voice input for estimated cost"
+                disabled={loading || !recognitionSupported}
+              />
+            </div>
           </div>
 
           <div style={styles.formGroup}>
@@ -671,14 +693,22 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
 
             <div style={styles.formGroup}>
               <label style={styles.label}>Accident Details</label>
-              <textarea
-                name="accident_details"
-                value={insuranceData.accident_details}
-                onChange={handleChange}
-                style={styles.textarea}
-                placeholder="Describe the accident details"
-                disabled={loading}
-              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <textarea
+                  name="accident_details"
+                  value={insuranceData.accident_details}
+                  onChange={handleChange}
+                  style={styles.textarea}
+                  placeholder="Describe the accident details"
+                  disabled={loading}
+                />
+                <VoiceInputButton
+                  listening={listeningField === 'accident_details'}
+                  onClick={() => toggleListening('accident_details')}
+                  ariaLabel="Voice input for accident details"
+                  disabled={loading || !recognitionSupported}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -702,26 +732,42 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
 
             <div style={styles.formGroup}>
               <label style={styles.label}>Doctors Consulted for This Illness</label>
-              <textarea
-                name="doctors_consulted_for_this_illness"
-                value={insuranceData.doctors_consulted_for_this_illness}
-                onChange={handleChange}
-                style={styles.textarea}
-                placeholder="Enter doctors consulted"
-                disabled={loading}
-              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <textarea
+                  name="doctors_consulted_for_this_illness"
+                  value={insuranceData.doctors_consulted_for_this_illness}
+                  onChange={handleChange}
+                  style={styles.textarea}
+                  placeholder="Enter doctors consulted"
+                  disabled={loading}
+                />
+                <VoiceInputButton
+                  listening={listeningField === 'doctors_consulted_for_this_illness'}
+                  onClick={() => toggleListening('doctors_consulted_for_this_illness')}
+                  ariaLabel="Voice input for doctors consulted"
+                  disabled={loading || !recognitionSupported}
+                />
+              </div>
             </div>
 
             <div style={styles.formGroup}>
               <label style={styles.label}>Doctors or Clinic Contact</label>
-              <textarea
-                name="doctors_or_clinic_contact"
-                value={insuranceData.doctors_or_clinic_contact}
-                onChange={handleChange}
-                style={styles.textarea}
-                placeholder="Enter contact information"
-                disabled={loading}
-              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <textarea
+                  name="doctors_or_clinic_contact"
+                  value={insuranceData.doctors_or_clinic_contact}
+                  onChange={handleChange}
+                  style={styles.textarea}
+                  placeholder="Enter contact information"
+                  disabled={loading}
+                />
+                <VoiceInputButton
+                  listening={listeningField === 'doctors_or_clinic_contact'}
+                  onClick={() => toggleListening('doctors_or_clinic_contact')}
+                  ariaLabel="Voice input for doctors or clinic contact"
+                  disabled={loading || !recognitionSupported}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -731,26 +777,42 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
 
         <div style={styles.formGroup}>
           <label style={styles.label}>Diagnosis</label>
-          <textarea
-            name="diagnosis"
-            value={insuranceData.diagnosis}
-            onChange={handleChange}
-            style={styles.textarea}
-            placeholder="Enter diagnosis"
-            disabled={loading}
-          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <textarea
+              name="diagnosis"
+              value={insuranceData.diagnosis}
+              onChange={handleChange}
+              style={styles.textarea}
+              placeholder="Enter diagnosis"
+              disabled={loading}
+            />
+            <VoiceInputButton
+              listening={listeningField === 'diagnosis'}
+              onClick={() => toggleListening('diagnosis')}
+              ariaLabel="Voice input for diagnosis"
+              disabled={loading || !recognitionSupported}
+            />
+          </div>
         </div>
 
         <div style={styles.formGroup}>
           <label style={styles.label}>How Long is Person Aware of This Condition</label>
-          <textarea
-            name="how_long_is_person_aware_of_this_condition"
-            value={insuranceData.how_long_is_person_aware_of_this_condition}
-            onChange={handleChange}
-            style={styles.textarea}
-            placeholder="Describe awareness duration"
-            disabled={loading}
-          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <textarea
+              name="how_long_is_person_aware_of_this_condition"
+              value={insuranceData.how_long_is_person_aware_of_this_condition}
+              onChange={handleChange}
+              style={styles.textarea}
+              placeholder="Describe awareness duration"
+              disabled={loading}
+            />
+            <VoiceInputButton
+              listening={listeningField === 'how_long_is_person_aware_of_this_condition'}
+              onClick={() => toggleListening('how_long_is_person_aware_of_this_condition')}
+              ariaLabel="Voice input for awareness duration"
+              disabled={loading || !recognitionSupported}
+            />
+          </div>
         </div>
 
         {/* Vital Signs */}
@@ -842,14 +904,22 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
         {insuranceData.any_previous_consultaion === 'Yes' && (
           <div style={styles.formGroup}>
             <label style={styles.label}>Details of Previous Consultation</label>
-            <textarea
-              name="details_of_previous_consultation"
-              value={insuranceData.details_of_previous_consultation}
-              onChange={handleChange}
-              style={styles.textarea}
-              placeholder="Enter previous consultation details"
-              disabled={loading}
-            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <textarea
+                name="details_of_previous_consultation"
+                value={insuranceData.details_of_previous_consultation}
+                onChange={handleChange}
+                style={styles.textarea}
+                placeholder="Enter previous consultation details"
+                disabled={loading}
+              />
+              <VoiceInputButton
+                listening={listeningField === 'details_of_previous_consultation'}
+                onClick={() => toggleListening('details_of_previous_consultation')}
+                ariaLabel="Voice input for previous consultation details"
+                disabled={loading || !recognitionSupported}
+              />
+            </div>
           </div>
         )}
 
@@ -886,14 +956,22 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
         {insuranceData.was_this_patient_referred === 'Yes' && (
           <div style={styles.formGroup}>
             <label style={styles.label}>Patient Referred Details</label>
-            <textarea
-              name="patient_referred_details"
-              value={insuranceData.patient_referred_details}
-              onChange={handleChange}
-              style={styles.textarea}
-              placeholder="Enter referral details"
-              disabled={loading}
-            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <textarea
+                name="patient_referred_details"
+                value={insuranceData.patient_referred_details}
+                onChange={handleChange}
+                style={styles.textarea}
+                placeholder="Enter referral details"
+                disabled={loading}
+              />
+              <VoiceInputButton
+                listening={listeningField === 'patient_referred_details'}
+                onClick={() => toggleListening('patient_referred_details')}
+                ariaLabel="Voice input for patient referred details"
+                disabled={loading || !recognitionSupported}
+              />
+            </div>
           </div>
         )}
 
@@ -946,40 +1024,64 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
 
             <div style={styles.formGroup}>
               <label style={styles.label}>Disease or Disorder</label>
-              <input
-                type="text"
-                name="disease_or_disorder"
-                value={insuranceData.disease_or_disorder}
-                onChange={handleChange}
-                style={styles.input}
-                placeholder="Enter disease or disorder"
-                disabled={loading}
-              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <input
+                  type="text"
+                  name="disease_or_disorder"
+                  value={insuranceData.disease_or_disorder}
+                  onChange={handleChange}
+                  style={styles.input}
+                  placeholder="Enter disease or disorder"
+                  disabled={loading}
+                />
+                <VoiceInputButton
+                  listening={listeningField === 'disease_or_disorder'}
+                  onClick={() => toggleListening('disease_or_disorder')}
+                  ariaLabel="Voice input for disease or disorder"
+                  disabled={loading || !recognitionSupported}
+                />
+              </div>
             </div>
 
             <div style={styles.formGroup}>
               <label style={styles.label}>Treatment or Hospitalization Details</label>
-              <textarea
-                name="treatment_or_hospitalization_details"
-                value={insuranceData.treatment_or_hospitalization_details}
-                onChange={handleChange}
-                style={styles.textarea}
-                placeholder="Enter treatment details"
-                disabled={loading}
-              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <textarea
+                  name="treatment_or_hospitalization_details"
+                  value={insuranceData.treatment_or_hospitalization_details}
+                  onChange={handleChange}
+                  style={styles.textarea}
+                  placeholder="Enter treatment details"
+                  disabled={loading}
+                />
+                <VoiceInputButton
+                  listening={listeningField === 'treatment_or_hospitalization_details'}
+                  onClick={() => toggleListening('treatment_or_hospitalization_details')}
+                  ariaLabel="Voice input for treatment details"
+                  disabled={loading || !recognitionSupported}
+                />
+              </div>
             </div>
 
             <div style={styles.formGroup}>
               <label style={styles.label}>Doctor or Hospital or Clinic</label>
-              <input
-                type="text"
-                name="doctor_or_hospital_or_clinic"
-                value={insuranceData.doctor_or_hospital_or_clinic}
-                onChange={handleChange}
-                style={styles.input}
-                placeholder="Enter doctor/hospital/clinic name"
-                disabled={loading}
-              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <input
+                  type="text"
+                  name="doctor_or_hospital_or_clinic"
+                  value={insuranceData.doctor_or_hospital_or_clinic}
+                  onChange={handleChange}
+                  style={styles.input}
+                  placeholder="Enter doctor/hospital/clinic name"
+                  disabled={loading}
+                />
+                <VoiceInputButton
+                  listening={listeningField === 'doctor_or_hospital_or_clinic'}
+                  onClick={() => toggleListening('doctor_or_hospital_or_clinic')}
+                  ariaLabel="Voice input for doctor/hospital/clinic"
+                  disabled={loading || !recognitionSupported}
+                />
+              </div>
             </div>
 
             {/* More History Checkbox */}
@@ -1152,14 +1254,22 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
             
             <div style={styles.formGroup}>
               <label style={styles.label}>Provisional Diagnosis</label>
-              <textarea
-                name="provisional_diagnosis"
-                value={insuranceData.provisional_diagnosis}
-                onChange={handleChange}
-                style={styles.textarea}
-                placeholder="Enter provisional diagnosis"
-                disabled={loading}
-              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <textarea
+                  name="provisional_diagnosis"
+                  value={insuranceData.provisional_diagnosis}
+                  onChange={handleChange}
+                  style={styles.textarea}
+                  placeholder="Enter provisional diagnosis"
+                  disabled={loading}
+                />
+                <VoiceInputButton
+                  listening={listeningField === 'provisional_diagnosis'}
+                  onClick={() => toggleListening('provisional_diagnosis')}
+                  ariaLabel="Voice input for provisional diagnosis"
+                  disabled={loading || !recognitionSupported}
+                />
+              </div>
             </div>
 
             <div style={styles.formRow}>
@@ -1190,14 +1300,22 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
 
             <div style={styles.formGroup}>
               <label style={styles.label}>Cause and Pathology</label>
-              <textarea
-                name="cause_and_pathology"
-                value={insuranceData.cause_and_pathology}
-                onChange={handleChange}
-                style={styles.textarea}
-                placeholder="Enter cause and pathology underlying the present diagnosis"
-                disabled={loading}
-              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <textarea
+                  name="cause_and_pathology"
+                  value={insuranceData.cause_and_pathology}
+                  onChange={handleChange}
+                  style={styles.textarea}
+                  placeholder="Enter cause and pathology underlying the present diagnosis"
+                  disabled={loading}
+                />
+                <VoiceInputButton
+                  listening={listeningField === 'cause_and_pathology'}
+                  onClick={() => toggleListening('cause_and_pathology')}
+                  ariaLabel="Voice input for cause and pathology"
+                  disabled={loading || !recognitionSupported}
+                />
+              </div>
             </div>
 
             <div style={styles.formGroup}>
@@ -1239,14 +1357,22 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
             
             <div style={styles.formGroup}>
               <label style={styles.label}>Admitting Diagnosis</label>
-              <textarea
-                name="admitting_diagnosis"
-                value={insuranceData.admitting_diagnosis}
-                onChange={handleChange}
-                style={styles.textarea}
-                placeholder="Enter admitting diagnosis"
-                disabled={loading}
-              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <textarea
+                  name="admitting_diagnosis"
+                  value={insuranceData.admitting_diagnosis}
+                  onChange={handleChange}
+                  style={styles.textarea}
+                  placeholder="Enter admitting diagnosis"
+                  disabled={loading}
+                />
+                <VoiceInputButton
+                  listening={listeningField === 'admitting_diagnosis'}
+                  onClick={() => toggleListening('admitting_diagnosis')}
+                  ariaLabel="Voice input for admitting diagnosis"
+                  disabled={loading || !recognitionSupported}
+                />
+              </div>
             </div>
 
             <div style={styles.formRow}>
@@ -1277,14 +1403,22 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
 
             <div style={styles.formGroup}>
               <label style={styles.label}>Admitting Diagnosis Cause and Pathology</label>
-              <textarea
-                name="admitting_diagnosis_cause_and_pathology"
-                value={insuranceData.admitting_diagnosis_cause_and_pathology}
-                onChange={handleChange}
-                style={styles.textarea}
-                placeholder="Enter cause and pathology"
-                disabled={loading}
-              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <textarea
+                  name="admitting_diagnosis_cause_and_pathology"
+                  value={insuranceData.admitting_diagnosis_cause_and_pathology}
+                  onChange={handleChange}
+                  style={styles.textarea}
+                  placeholder="Enter cause and pathology"
+                  disabled={loading}
+                />
+                <VoiceInputButton
+                  listening={listeningField === 'admitting_diagnosis_cause_and_pathology'}
+                  onClick={() => toggleListening('admitting_diagnosis_cause_and_pathology')}
+                  ariaLabel="Voice input for admitting diagnosis cause and pathology"
+                  disabled={loading || !recognitionSupported}
+                />
+              </div>
             </div>
 
             <div style={styles.formGroup}>
@@ -1355,14 +1489,22 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
         {insuranceData.condition_be_managed === 'No' && (
           <div style={styles.formGroup}>
             <label style={styles.label}>If No, please provide reason for admission</label>
-            <textarea
-              name="reason_for_admission"
-              value={insuranceData.reason_for_admission}
-              onChange={handleChange}
-              style={styles.textarea}
-              placeholder="Enter reason why condition cannot be managed"
-              disabled={loading}
-            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <textarea
+                name="reason_for_admission"
+                value={insuranceData.reason_for_admission}
+                onChange={handleChange}
+                style={styles.textarea}
+                placeholder="Enter reason why condition cannot be managed"
+                disabled={loading}
+              />
+              <VoiceInputButton
+                listening={listeningField === 'reason_for_admission'}
+                onClick={() => toggleListening('reason_for_admission')}
+                ariaLabel="Voice input for reason for admission"
+                disabled={loading || !recognitionSupported}
+              />
+            </div>
           </div>
         )}
 
@@ -1422,14 +1564,22 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
         {insuranceData.need_to_add_others === 'Yes' && (
           <div style={styles.formGroup}>
             <label style={styles.label}>Please provide the other condition details.</label>
-            <textarea
-              name="others"
-              value={insuranceData.others}
-              onChange={handleChange}
-              style={styles.textarea}
-              placeholder="Enter other conditions"
-              disabled={loading}
-            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <textarea
+                name="others"
+                value={insuranceData.others}
+                onChange={handleChange}
+                style={styles.textarea}
+                placeholder="Enter other conditions"
+                disabled={loading}
+              />
+              <VoiceInputButton
+                listening={listeningField === 'others'}
+                onClick={() => toggleListening('others')}
+                ariaLabel="Voice input for other condition details"
+                disabled={loading || !recognitionSupported}
+              />
+            </div>
           </div>
         )}
 
@@ -1438,14 +1588,22 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
         
         <div style={styles.formGroup}>
           <label style={styles.label}>Type of Operation/Procedures</label>
-          <textarea
-            name="type_of_operation_procedures"
-            value={insuranceData.type_of_operation_procedures}
-            onChange={handleChange}
-            style={styles.textarea}
-            placeholder="Enter type of operation or procedures"
-            disabled={loading}
-          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <textarea
+              name="type_of_operation_procedures"
+              value={insuranceData.type_of_operation_procedures}
+              onChange={handleChange}
+              style={styles.textarea}
+              placeholder="Enter type of operation or procedures"
+              disabled={loading}
+            />
+            <VoiceInputButton
+              listening={listeningField === 'type_of_operation_procedures'}
+              onClick={() => toggleListening('type_of_operation_procedures')}
+              ariaLabel="Voice input for type of operation or procedures"
+              disabled={loading || !recognitionSupported}
+            />
+          </div>
         </div>
 
         {/* ==================== NEED TO ADD OTHERS COPY ==================== */}
@@ -1487,15 +1645,23 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
             <div style={styles.formRow}>
               <div style={styles.formGroup}>
                 <label style={styles.label}>Condition 1</label>
-                <input
-                  type="text"
-                  name="Condition_1"
-                  value={insuranceData.Condition_1}
-                  onChange={handleChange}
-                  style={styles.input}
-                  placeholder="Enter condition 1"
-                  disabled={loading}
-                />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input
+                    type="text"
+                    name="Condition_1"
+                    value={insuranceData.Condition_1}
+                    onChange={handleChange}
+                    style={styles.input}
+                    placeholder="Enter condition 1"
+                    disabled={loading}
+                  />
+                  <VoiceInputButton
+                    listening={listeningField === 'Condition_1'}
+                    onClick={() => toggleListening('Condition_1')}
+                    ariaLabel="Voice input for condition 1"
+                    disabled={loading || !recognitionSupported}
+                  />
+                </div>
               </div>
 
               <div style={styles.formGroup}>
@@ -1514,15 +1680,23 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
             <div style={styles.formRow}>
               <div style={styles.formGroup}>
                 <label style={styles.label}>Condition 2</label>
-                <input
-                  type="text"
-                  name="Condition_2"
-                  value={insuranceData.Condition_2}
-                  onChange={handleChange}
-                  style={styles.input}
-                  placeholder="Enter condition 2"
-                  disabled={loading}
-                />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input
+                    type="text"
+                    name="Condition_2"
+                    value={insuranceData.Condition_2}
+                    onChange={handleChange}
+                    style={styles.input}
+                    placeholder="Enter condition 2"
+                    disabled={loading}
+                  />
+                  <VoiceInputButton
+                    listening={listeningField === 'Condition_2'}
+                    onClick={() => toggleListening('Condition_2')}
+                    ariaLabel="Voice input for condition 2"
+                    disabled={loading || !recognitionSupported}
+                  />
+                </div>
               </div>
 
               <div style={styles.formGroup}>

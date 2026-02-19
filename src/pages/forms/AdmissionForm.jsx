@@ -1,6 +1,8 @@
 // src/components/forms/AdmissionForm.jsx
 import { useEffect, useState } from 'react';
 import { getUser } from '../../utils/auth';
+import useSpeechRecognition from '../../hooks/useSpeechRecognition';
+import VoiceInputButton from '../../components/VoiceInputButton';
 
 function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, submitLabel, cancelLabel, loadingLabel, onChange }) {
   const normalizeDateInput = (dateValue) => {
@@ -53,6 +55,15 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
   });
 
   const [errors, setErrors] = useState({});
+
+  const { recognitionSupported, listeningField, toggleListening } = useSpeechRecognition({
+    lang: 'en-US',
+    onResult: (field, transcript) => {
+      setAdmissionData(prev => ({ ...prev, [field]: transcript.trim() }));
+    },
+    onError: (err) => console.error('Speech recognition error', err)
+  });
+
   const currentUser = getUser();
   const roleName = currentUser?.role?.name;
   const canModifyStatus = roleName === 'Administrator' || roleName === 'Hospital_staff';
@@ -271,6 +282,22 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
       boxSizing: 'border-box',
       minHeight: '80px',
       resize: 'vertical'
+    },
+    micButton: {
+      background: '#fff',
+      border: '1px solid #cbd5e0',
+      borderRadius: '50%',
+      width: 34,
+      height: 34,
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      cursor: 'pointer',
+      padding: 0
+    },
+    micActive: {
+      background: '#e6f7ff',
+      borderColor: '#60a5fa'
     },
     errorMessage: {
       color: '#e74c3c',
@@ -517,14 +544,22 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
           <label style={styles.label}>
             Diagnosis <span style={styles.required}>*</span>
           </label>
-          <textarea
-            name="diagnosis"
-            value={admissionData.diagnosis}
-            onChange={handleChange}
-            style={errors.diagnosis ? { ...styles.textarea, border: '1px solid #e74c3c' } : styles.textarea}
-            placeholder="Enter diagnosis details"
-            disabled={loading}
-          />
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+            <textarea
+              name="diagnosis"
+              value={admissionData.diagnosis}
+              onChange={handleChange}
+              style={errors.diagnosis ? { ...styles.textarea, border: '1px solid #e74c3c' } : styles.textarea}
+              placeholder="Enter diagnosis details"
+              disabled={loading}
+            />
+            <VoiceInputButton
+              listening={listeningField === 'diagnosis'}
+              onClick={() => toggleListening('diagnosis')}
+              ariaLabel="Voice input for diagnosis"
+              disabled={loading || !recognitionSupported}
+            />
+          </div>
           {errors.diagnosis && <span style={styles.errorMessage}>{errors.diagnosis}</span>}
         </div>
 
@@ -556,14 +591,22 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
 
         <div style={styles.formGroup}>
           <label style={styles.label}>Type of Operation or Procedure</label>
-          <textarea
-            name="type_of_operation_or_procedure"
-            value={admissionData.type_of_operation_or_procedure}
-            onChange={handleChange}
-            style={styles.textarea}
-            placeholder="Enter operation/procedure type"
-            disabled={loading}
-          />
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+            <textarea
+              name="type_of_operation_or_procedure"
+              value={admissionData.type_of_operation_or_procedure}
+              onChange={handleChange}
+              style={styles.textarea}
+              placeholder="Enter operation/procedure type"
+              disabled={loading}
+            />
+            <VoiceInputButton
+              listening={listeningField === 'type_of_operation_or_procedure'}
+              onClick={() => toggleListening('type_of_operation_or_procedure')}
+              ariaLabel="Voice input for operation type"
+              disabled={loading || !recognitionSupported}
+            />
+          </div>
         </div>
 
         <div style={styles.formGroup}>
@@ -640,14 +683,22 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
 
         <div style={styles.formGroup}>
           <label style={styles.label}>Instructions for Ward Staff</label>
-          <textarea
-            name="instructions_to_ward_staff"
-            value={admissionData.instructions_to_ward_staff}
-            onChange={handleChange}
-            style={styles.textarea}
-            placeholder="Enter special instructions for ward staff"
-            disabled={loading}
-          />
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+            <textarea
+              name="instructions_to_ward_staff"
+              value={admissionData.instructions_to_ward_staff}
+              onChange={handleChange}
+              style={styles.textarea}
+              placeholder="Enter special instructions for ward staff"
+              disabled={loading}
+            />
+            <VoiceInputButton
+              listening={listeningField === 'instructions_to_ward_staff'}
+              onClick={() => toggleListening('instructions_to_ward_staff')}
+              ariaLabel="Voice input for instructions to ward staff"
+              disabled={loading || !recognitionSupported}
+            />
+          </div>
         </div>
 
         <div style={styles.formGroup}>
@@ -693,14 +744,22 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
         {admissionData.need_to_add_more_procedures === 'Yes' && (
           <div style={styles.formGroup}>
             <label style={styles.label}>Other Endoscopy Procedure Details</label>
-            <textarea
-              name="other_endoscopy_procedures"
-              value={admissionData.other_endoscopy_procedures}
-              onChange={handleChange}
-              style={styles.textarea}
-              placeholder="Enter other endoscopy procedure details"
-              disabled={loading}
-            />
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+              <textarea
+                name="other_endoscopy_procedures"
+                value={admissionData.other_endoscopy_procedures}
+                onChange={handleChange}
+                style={styles.textarea}
+                placeholder="Enter other endoscopy procedure details"
+                disabled={loading}
+              />
+              <VoiceInputButton
+                listening={listeningField === 'other_endoscopy_procedures'}
+                onClick={() => toggleListening('other_endoscopy_procedures')}
+                ariaLabel="Voice input for other endoscopy procedure details"
+                disabled={loading || !recognitionSupported}
+              />
+            </div>
           </div>
         )}
 
@@ -774,14 +833,22 @@ function AdmissionForm({ patientId, onSubmit, onCancel, loading, initialData, su
 
         <div style={styles.formGroup}>
           <label style={styles.label}>Additional Notes / Risks</label>
-          <textarea
-            name="Additional_Information_and_Individual_Risks"
-            value={admissionData.Additional_Information_and_Individual_Risks}
-            onChange={handleChange}
-            style={styles.textarea}
-            placeholder="Enter additional information and risks"
-            disabled={loading}
-          />
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+            <textarea
+              name="Additional_Information_and_Individual_Risks"
+              value={admissionData.Additional_Information_and_Individual_Risks}
+              onChange={handleChange}
+              style={styles.textarea}
+              placeholder="Enter additional information and risks"
+              disabled={loading}
+            />
+            <VoiceInputButton
+              listening={listeningField === 'Additional_Information_and_Individual_Risks'}
+              onClick={() => toggleListening('Additional_Information_and_Individual_Risks')}
+              ariaLabel="Voice input for additional notes and risks"
+              disabled={loading || !recognitionSupported}
+            />
+          </div>
         </div>
 
         <div style={styles.formGroup}>
