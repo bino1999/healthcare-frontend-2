@@ -1,6 +1,6 @@
 // src/pages/GeneratePAF/pafApi.js
 
-const PAF_API_URL = 'http://192.168.8.104:8000/api/generate-pdf';
+const PAF_API_URL = 'https://popular-unseconded-les.ngrok-free.dev';
 // const PAF_API_URL = 'http://100.64.177.106:5678/webhook/directus-data';
 const DIRECTUS_URL = import.meta.env.VITE_DIRECTUS_URL || 'http://100.64.177.106:8055';
 
