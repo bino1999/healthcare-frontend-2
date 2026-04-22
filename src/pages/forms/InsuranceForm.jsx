@@ -246,8 +246,15 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
       return;
     }
 
+    const isAccident = insuranceData.admission_reason === 'Accident';
+    const isIllness = insuranceData.admission_reason === 'Illness';
+    const isProvisional = insuranceData.diagnosis_information === 'Provisional Diagnosis';
+    const isAdmitting = insuranceData.diagnosis_information === 'Admitting Diagnosis';
+    const conditionExisted = insuranceData.condition_exist_before === 'Yes';
+    const hasMoreHistory = conditionExisted && insuranceData.more;
+
     const submissionData = {
-      id: initialData?.id || null, // Include the insurance ID if available
+      id: initialData?.id || null,
       pation: patientId,
       Policy_No: insuranceData.Policy_No || null,
       tpa_name: insuranceData.tpa_name || null,
@@ -256,12 +263,17 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
       estimated_cost: insuranceData.estimated_cost ? parseFloat(insuranceData.estimated_cost) : null,
       expected_days_of_stay: insuranceData.expected_days_of_stay ? parseInt(insuranceData.expected_days_of_stay) : null,
       admission_reason: insuranceData.admission_reason || null,
-      accident_date: insuranceData.accident_date || null,
-      accident_time: insuranceData.accident_time || null,
-      accident_details: insuranceData.accident_details || null,
-      illness_symptoms_first_appeared_on_date: insuranceData.illness_symptoms_first_appeared_on_date || null,
-      doctors_consulted_for_this_illness: insuranceData.doctors_consulted_for_this_illness || null,
-      doctors_or_clinic_contact: insuranceData.doctors_or_clinic_contact || null,
+
+      // Accident fields — only when admission_reason is 'Accident'
+      accident_date: isAccident ? insuranceData.accident_date || null : null,
+      accident_time: isAccident ? insuranceData.accident_time || null : null,
+      accident_details: isAccident ? insuranceData.accident_details || null : null,
+
+      // Illness fields — only when admission_reason is 'Illness'
+      illness_symptoms_first_appeared_on_date: isIllness ? insuranceData.illness_symptoms_first_appeared_on_date || null : null,
+      doctors_consulted_for_this_illness: isIllness ? insuranceData.doctors_consulted_for_this_illness || null : null,
+      doctors_or_clinic_contact: isIllness ? insuranceData.doctors_or_clinic_contact || null : null,
+
       diagnosis: insuranceData.diagnosis || null,
       how_long_is_person_aware_of_this_condition: insuranceData.how_long_is_person_aware_of_this_condition || null,
       blood_pressure: insuranceData.blood_pressure || null,
@@ -269,47 +281,74 @@ function InsuranceForm({ patientId, onSubmit, onSkip, onCancel, loading, initial
       pulse: insuranceData.pulse || null,
       date_first_consulted: insuranceData.date_first_consulted || null,
       any_previous_consultaion: insuranceData.any_previous_consultaion || null,
-      details_of_previous_consultation: insuranceData.details_of_previous_consultation || null,
+
+      // Only when any_previous_consultaion is 'Yes'
+      details_of_previous_consultation: insuranceData.any_previous_consultaion === 'Yes' ? insuranceData.details_of_previous_consultation || null : null,
+
       was_this_patient_referred: insuranceData.was_this_patient_referred || null,
-      patient_referred_details: insuranceData.patient_referred_details || null,
+
+      // Only when was_this_patient_referred is 'Yes'
+      patient_referred_details: insuranceData.was_this_patient_referred === 'Yes' ? insuranceData.patient_referred_details || null : null,
+
       condition_exist_before: insuranceData.condition_exist_before || null,
-      date: insuranceData.date || null,
-      disease_or_disorder: insuranceData.disease_or_disorder || null,
-      treatment_or_hospitalization_details: insuranceData.treatment_or_hospitalization_details || null,
-      doctor_or_hospital_or_clinic: insuranceData.doctor_or_hospital_or_clinic || null,
-      more: insuranceData.more,
-      date1: insuranceData.date1 || null,
-      treatment_or_hospitalization_details1: insuranceData.treatment_or_hospitalization_details1 || null,
-      disease_or_disorder1: insuranceData.disease_or_disorder1 || null,
-      doctor_or_hospital_or_clinic1: insuranceData.doctor_or_hospital_or_clinic1 || null,
-      date2: insuranceData.date2 || null,
-      treatment_or_hospitalization_details2: insuranceData.treatment_or_hospitalization_details2 || null,
-      disease_or_disorder2: insuranceData.disease_or_disorder2 || null,
-      doctor_or_hospital_or_clinic2: insuranceData.doctor_or_hospital_or_clinic2 || null,
+
+      // Previous condition fields — only when condition_exist_before is 'Yes'
+      date: conditionExisted ? insuranceData.date || null : null,
+      disease_or_disorder: conditionExisted ? insuranceData.disease_or_disorder || null : null,
+      treatment_or_hospitalization_details: conditionExisted ? insuranceData.treatment_or_hospitalization_details || null : null,
+      doctor_or_hospital_or_clinic: conditionExisted ? insuranceData.doctor_or_hospital_or_clinic || null : null,
+      more: conditionExisted ? insuranceData.more : false,
+
+      // Additional history records — only when condition_exist_before is 'Yes' AND more is checked
+      date1: hasMoreHistory ? insuranceData.date1 || null : null,
+      treatment_or_hospitalization_details1: hasMoreHistory ? insuranceData.treatment_or_hospitalization_details1 || null : null,
+      disease_or_disorder1: hasMoreHistory ? insuranceData.disease_or_disorder1 || null : null,
+      doctor_or_hospital_or_clinic1: hasMoreHistory ? insuranceData.doctor_or_hospital_or_clinic1 || null : null,
+      date2: hasMoreHistory ? insuranceData.date2 || null : null,
+      treatment_or_hospitalization_details2: hasMoreHistory ? insuranceData.treatment_or_hospitalization_details2 || null : null,
+      disease_or_disorder2: hasMoreHistory ? insuranceData.disease_or_disorder2 || null : null,
+      doctor_or_hospital_or_clinic2: hasMoreHistory ? insuranceData.doctor_or_hospital_or_clinic2 || null : null,
+
       diagnosis_information: insuranceData.diagnosis_information || null,
-      provisional_diagnosis: insuranceData.provisional_diagnosis || null,
-      diagnosis_confirmed: insuranceData.diagnosis_confirmed || null,
-      advised_patient: insuranceData.advised_patient || null,
-      cause_and_pathology: insuranceData.cause_and_pathology || null,
-      any_possibility_of_relapse: insuranceData.any_possibility_of_relapse || null,
-      admitting_diagnosis: insuranceData.admitting_diagnosis || null,
-      admitting_diagnosis_confirmed: insuranceData.admitting_diagnosis_confirmed || null,
-      admitting_diagnosis_advised_patien: insuranceData.admitting_diagnosis_advised_patien || null,
-      admitting_diagnosis_cause_and_pathology: insuranceData.admitting_diagnosis_cause_and_pathology || null,
-      admitting_diagnosisany_possibility_of_relapse: insuranceData.admitting_diagnosisany_possibility_of_relapse || null,
+
+      // Provisional diagnosis fields — only when diagnosis_information is 'Provisional Diagnosis'
+      provisional_diagnosis: isProvisional ? insuranceData.provisional_diagnosis || null : null,
+      diagnosis_confirmed: isProvisional ? insuranceData.diagnosis_confirmed || null : null,
+      advised_patient: isProvisional ? insuranceData.advised_patient || null : null,
+      cause_and_pathology: isProvisional ? insuranceData.cause_and_pathology || null : null,
+      any_possibility_of_relapse: isProvisional ? insuranceData.any_possibility_of_relapse || null : null,
+
+      // Admitting diagnosis fields — only when diagnosis_information is 'Admitting Diagnosis'
+      admitting_diagnosis: isAdmitting ? insuranceData.admitting_diagnosis || null : null,
+      admitting_diagnosis_confirmed: isAdmitting ? insuranceData.admitting_diagnosis_confirmed || null : null,
+      admitting_diagnosis_advised_patien: isAdmitting ? insuranceData.admitting_diagnosis_advised_patien || null : null,
+      admitting_diagnosis_cause_and_pathology: isAdmitting ? insuranceData.admitting_diagnosis_cause_and_pathology || null : null,
+      admitting_diagnosisany_possibility_of_relapse: isAdmitting ? insuranceData.admitting_diagnosisany_possibility_of_relapse || null : null,
+
       condition_be_managed: insuranceData.condition_be_managed || null,
-      reason_for_admission: insuranceData.reason_for_admission || null,
+
+      // Only when condition_be_managed is 'No'
+      reason_for_admission: insuranceData.condition_be_managed === 'No' ? insuranceData.reason_for_admission || null : null,
+
       condition_related_to: insuranceData.condition_related_to,
       need_to_add_others: insuranceData.need_to_add_others || null,
-      others: insuranceData.others || null,
+
+      // Only when need_to_add_others is 'Yes'
+      others: insuranceData.need_to_add_others === 'Yes' ? insuranceData.others || null : null,
+
       type_of_operation_procedures: insuranceData.type_of_operation_procedures || null,
       need_to_add_others_copy: insuranceData.need_to_add_others_copy || null,
-      Condition_1: insuranceData.Condition_1 || null,
-      Condition_2: insuranceData.Condition_2 || null,
-      since: insuranceData.since || null,
-      since_copy: insuranceData.since_copy || null,
+
+      // Other conditions — only when need_to_add_others_copy is 'Yes'
+      Condition_1: insuranceData.need_to_add_others_copy === 'Yes' ? insuranceData.Condition_1 || null : null,
+      Condition_2: insuranceData.need_to_add_others_copy === 'Yes' ? insuranceData.Condition_2 || null : null,
+      since: insuranceData.need_to_add_others_copy === 'Yes' ? insuranceData.since || null : null,
+      since_copy: insuranceData.need_to_add_others_copy === 'Yes' ? insuranceData.since_copy || null : null,
+
       pregnant_information: insuranceData.pregnant_information || null,
-      pregnancy_duration: insuranceData.pregnancy_duration || null
+
+      // Only when pregnant_information is 'Yes'
+      pregnancy_duration: insuranceData.pregnant_information === 'Yes' ? insuranceData.pregnancy_duration || null : null,
     };
 
     console.log('InsuranceForm submissionData:', submissionData);
