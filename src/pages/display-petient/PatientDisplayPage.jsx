@@ -682,7 +682,6 @@ function PatientDisplayPage() {
     { label: 'MRN', value: patient.mrn || 'N/A' },
     { label: 'Admission', value: admission?.status || 'N/A' },
     { label: 'IGL', value: insurance?.IGL_status || 'N/A' },
-    { label: 'Total Fee', value: formatCurrency(patient.total_fee) },
     {
       label: 'Updated',
       value: formatDate(patient.date_updated || patient.date_created)
