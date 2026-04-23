@@ -3,7 +3,7 @@
 // const PAF_API_URL = 'https://popular-unseconded-les.ngrok-free.dev/api/generate-pdf-frontend';
 // const PAF_API_URL = 'http://100.64.177.106:5678/webhook/directus-data';
 
-const PAF_API_URL = 'https://edge-overview-smooth.ngrok-free.dev';
+const PAF_API_URL = 'https://edge-overview-smooth.ngrok-free.dev/api/generate-pdf-frontend';
 const DIRECTUS_URL = import.meta.env.VITE_DIRECTUS_URL || 'http://100.64.177.106:8055';
 
 /**
